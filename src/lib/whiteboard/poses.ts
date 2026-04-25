@@ -9,8 +9,8 @@
 import type { Pose } from "./types";
 import { fingerStates, pinchRatio, palmSize, type LM } from "./landmarks";
 
-/** Default ratio = 0.35 ≈ ~3.5cm gap on a typical hand. */
-let PINCH_RATIO_THRESHOLD = 0.35;
+/** Default ratio = 0.4425 ≈ recognizes a visible 2–3cm pinch gap on a typical hand. */
+let PINCH_RATIO_THRESHOLD = 0.4425;
 /** OK sign requires tips actually touching: tighter ratio. */
 let OK_RATIO_THRESHOLD = 0.18;
 
@@ -22,8 +22,8 @@ let OK_RATIO_THRESHOLD = 0.18;
  */
 export function setPinchSensitivity(s: number) {
   const clamped = Math.max(0, Math.min(1, s));
-  PINCH_RATIO_THRESHOLD = 0.15 + clamped * 0.45;
-  OK_RATIO_THRESHOLD = 0.10 + clamped * 0.18;
+  PINCH_RATIO_THRESHOLD = 0.22 + clamped * 0.45;
+  OK_RATIO_THRESHOLD = 0.08 + clamped * 0.12;
 }
 export function getPinchRatioThreshold() { return PINCH_RATIO_THRESHOLD; }
 
@@ -37,7 +37,7 @@ export function classifyPose(lm: LM[]): Pose {
   const palm = palmSize(lm);
 
   // OK sign: thumb tip touches index tip, other three extended
-  if (ratio < OK_RATIO_THRESHOLD && f.middle && f.ring && f.pinky) return "OK";
+  if (ratio < OK_RATIO_THRESHOLD && f.middle && f.ring && f.pinky && !f.index) return "OK";
 
   // Pinch (thumb+index close, others curled)
   if (ratio < PINCH_RATIO_THRESHOLD && !f.middle && !f.ring && !f.pinky) return "PINCH";
@@ -82,17 +82,17 @@ export function classifyPose(lm: LM[]): Pose {
   }
 
   // Peace / V — index + middle extended (no ring/pinky); separation by palm
-  if (f.index && f.middle && !f.ring && !f.pinky) {
+  if (!f.thumb && f.index && f.middle && !f.ring && !f.pinky) {
     const sep = dist(lm[8], lm[12]) / palm;
-    return sep > 0.35 ? "PEACE" : "HOVER";
+    return sep > 0.42 ? "PEACE" : "HOVER";
   }
 
   // Three fingers (index+middle+ring) — used for shape mode
-  if (f.index && f.middle && f.ring && !f.pinky) return "THREE";
+  if (!f.thumb && f.index && f.middle && f.ring && !f.pinky) return "THREE";
 
   // INDEX_DOWN — only index, but pointing downward (tip below MCP)
   if (f.index && !f.middle && !f.ring && !f.pinky) {
-    if (lm[8].y > lm[5].y + palm * 0.4) return "INDEX_DOWN";
+    if (lm[8].y > lm[5].y + palm * 0.32) return "INDEX_DOWN";
     return "DRAW";
   }
 

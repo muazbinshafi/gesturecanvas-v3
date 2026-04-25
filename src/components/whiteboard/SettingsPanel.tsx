@@ -8,6 +8,7 @@ import {
 } from "@/lib/whiteboard/types";
 import { TOOL_NAMES, ACTION_NAMES } from "@/lib/whiteboard/actions";
 import { BUILTIN_PROFILES, makeBlankProfile, type GestureProfile } from "@/lib/whiteboard/profiles";
+import { applyStrictGestureReset } from "@/hooks/useSyncEngine";
 import { GestureTrainer } from "./GestureTrainer";
 import { CustomMappingsEditor } from "./CustomMappingsEditor";
 
@@ -562,12 +563,8 @@ export function SettingsPanel({ settings, update, livePose = "" }: { settings: A
             </Button>
             <Button variant="outline" size="sm" className="ml-2"
               onClick={() => {
-                if (!confirm("Reset all settings to defaults?")) return;
-                update({
-                  theme: "dark", smart_ink_mode: "auto", mirror_camera: true,
-                  disabled_poses: [], accent_color: "", reduce_motion: false, show_pose_badge: true,
-                  adaptive_stability: true, active_profile_id: "", gesture_profiles: BUILTIN_PROFILES,
-                });
+                if (!confirm("Reset all gesture settings to a strict baseline?")) return;
+                update(applyStrictGestureReset(settings));
               }}>
               Reset to defaults
             </Button>

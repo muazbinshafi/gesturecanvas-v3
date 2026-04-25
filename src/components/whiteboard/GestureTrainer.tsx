@@ -21,6 +21,7 @@ import {
   Hand, StickyNote, Image as ImageIcon, Sparkles, HelpCircle, X, Check,
 } from "lucide-react";
 import type { AppSettings } from "@/hooks/useSyncEngine";
+import { applyStrictGestureReset } from "@/hooks/useSyncEngine";
 import type { GestureMappings, GestureAction, Tool, Pose } from "@/lib/whiteboard/types";
 import { DEFAULT_MAPPINGS } from "@/lib/whiteboard/types";
 import { ACTION_NAMES, TOOL_NAMES, isAction, isTool } from "@/lib/whiteboard/actions";
@@ -194,8 +195,8 @@ export function GestureTrainer({ settings, update }: Props) {
   }, [target, settings.gesture_mappings, update]);
 
   const resetAll = useCallback(() => {
-    update({ gesture_mappings: { ...DEFAULT_MAPPINGS } });
-  }, [update]);
+    update(applyStrictGestureReset(settings));
+  }, [settings, update]);
 
   // Keyboard shortcuts inside dialog.
   useEffect(() => {
