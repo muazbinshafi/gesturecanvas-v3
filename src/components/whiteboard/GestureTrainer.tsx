@@ -445,6 +445,7 @@ export function GestureTrainer({ settings, update }: Props) {
               facingMode={settings.camera.facingMode}
               smoothing={settings.smoothing}
               stabilityThreshold={settings.pose_stability}
+              pinchSensitivity={settings.pinch_sensitivity}
               onFrame={setFrame}
               onToggle={() => { /* trainer doesn't toggle the main session */ }}
             />
