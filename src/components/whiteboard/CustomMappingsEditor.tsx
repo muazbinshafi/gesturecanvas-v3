@@ -24,13 +24,22 @@ import { TOOL_NAMES, ACTION_NAMES, isTool, isAction } from "@/lib/whiteboard/act
 type PoseKey = keyof GestureMappings;
 const POSE_KEYS: PoseKey[] = [
   "DRAW", "HOVER", "PAN", "ERASE", "PINCH",
-  "PEACE", "THREE", "OK", "ROCK", "CALL", "GUN", "L_SHAPE", "THUMBS_UP", "THUMBS_DOWN",
+  "PEACE", "THREE", "FOUR", "FIVE_SPREAD",
+  "OK", "ROCK", "CALL", "GUN", "L_SHAPE", "THUMBS_UP", "THUMBS_DOWN",
+  "PINKY_UP", "MIDDLE_UP", "INDEX_DOWN", "FIST_THUMB", "PALM_SIDE", "HEART",
+  "SWIPE_LEFT", "SWIPE_RIGHT", "SWIPE_UP", "SWIPE_DOWN",
+  "CIRCLE_CW", "CIRCLE_CCW", "DWELL",
 ];
 
 const POSE_EMOJI: Record<PoseKey, string> = {
   DRAW: "☝️", HOVER: "✌️", PAN: "✊", ERASE: "🖐️", PINCH: "🤏",
-  PEACE: "✌️", THREE: "🤟", OK: "👌", ROCK: "🤘", CALL: "🤙",
+  PEACE: "✌️", THREE: "🤟", FOUR: "✋", FIVE_SPREAD: "🖐",
+  OK: "👌", ROCK: "🤘", CALL: "🤙",
   GUN: "🔫", L_SHAPE: "🔠", THUMBS_UP: "👍", THUMBS_DOWN: "👎",
+  PINKY_UP: "🤙", MIDDLE_UP: "🖕", INDEX_DOWN: "👇",
+  FIST_THUMB: "👊", PALM_SIDE: "✋", HEART: "🫶",
+  SWIPE_LEFT: "⬅️", SWIPE_RIGHT: "➡️", SWIPE_UP: "⬆️", SWIPE_DOWN: "⬇️",
+  CIRCLE_CW: "🔃", CIRCLE_CCW: "🔄", DWELL: "⏳",
 };
 
 interface ValidationResult {
