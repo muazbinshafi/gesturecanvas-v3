@@ -10,7 +10,7 @@ import {
   DEFAULT_BRUSH, DEFAULT_CAMERA, DEFAULT_MAPPINGS, DEFAULT_PALM, DEFAULT_SMOOTHING, DEFAULT_VOICE,
   type BoardTheme, type BrushSettings, type CameraSettings, type GestureMappings,
   type PalmRejectionSettings, type SmoothingSettings, type VoiceSettings,
-  type CustomGestureTemplate, type Layer,
+  type CustomGestureTemplate, type CustomMapping, type Layer,
 } from "@/lib/whiteboard/types";
 import { BUILTIN_PROFILES, type GestureProfile } from "@/lib/whiteboard/profiles";
 
@@ -55,6 +55,8 @@ export interface AppSettings {
   gesture_profiles: GestureProfile[];
   /** Currently active profile id. Empty = "manual" mode using top-level mappings. */
   active_profile_id: string;
+  /** User-authored gesture-to-action overrides. Checked before gesture_mappings. */
+  custom_mappings: CustomMapping[];
   updated_at: string;
 }
 
@@ -85,6 +87,7 @@ const DEFAULTS: AppSettings = {
   adaptive_stability: true,
   gesture_profiles: BUILTIN_PROFILES,
   active_profile_id: "",
+  custom_mappings: [],
   updated_at: new Date(0).toISOString(),
 };
 
@@ -137,6 +140,7 @@ export function useSyncEngine() {
           adaptive_stability?: boolean;
           gesture_profiles?: GestureProfile[];
           active_profile_id?: string;
+          custom_mappings?: CustomMapping[];
         }) ?? {};
         const remote: AppSettings = {
           theme: (ui.theme ?? (data.theme as BoardTheme) ?? "dark"),
@@ -165,6 +169,7 @@ export function useSyncEngine() {
           adaptive_stability: ui.adaptive_stability ?? true,
           gesture_profiles: ui.gesture_profiles ?? BUILTIN_PROFILES,
           active_profile_id: ui.active_profile_id ?? "",
+          custom_mappings: ui.custom_mappings ?? [],
           updated_at: data.updated_at,
         };
         const local = await idbGet<AppSettings>("settings", LOCAL_KEY);
@@ -223,6 +228,7 @@ async function pushRemote(userId: string, s: AppSettings) {
       adaptive_stability: s.adaptive_stability,
       gesture_profiles: s.gesture_profiles,
       active_profile_id: s.active_profile_id,
+      custom_mappings: s.custom_mappings,
     } as unknown,
     updated_at: s.updated_at,
   };

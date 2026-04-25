@@ -10,10 +10,11 @@ import { QuickActionBar } from "@/components/whiteboard/QuickActionBar";
 import { Button } from "@/components/ui/button";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { useSyncEngine } from "@/hooks/useSyncEngine";
-import { LogOut, Sparkles, Wifi, WifiOff, User } from "lucide-react";
+import { LogOut, Sparkles, Wifi, WifiOff, User, Users } from "lucide-react";
 import type { Tool } from "@/lib/whiteboard/types";
 import { BOARD_THEMES } from "@/lib/whiteboard/types";
 import { runMapping } from "@/lib/whiteboard/actions";
+import { resolveCustom } from "@/components/whiteboard/CustomMappingsEditor";
 import { AdaptiveStability } from "@/lib/whiteboard/adaptiveStability";
 import { idbGet, saveLocalBoard } from "@/lib/whiteboard/idb";
 
@@ -119,7 +120,11 @@ function WhiteboardPage() {
       canvasRef.current?.applyGestureCursor(f.pose, f.cursor);
       return;
     }
-    const mapped = settings.gesture_mappings[f.pose as keyof typeof settings.gesture_mappings];
+    // Custom user-authored mappings take precedence over the base map.
+    const customWinner = resolveCustom(f.pose, settings.custom_mappings);
+    const mapped = customWinner
+      ? customWinner.action
+      : settings.gesture_mappings[f.pose as keyof typeof settings.gesture_mappings];
     if (mapped && f.pose !== "NONE") {
       // Record this as an "action" candidate for adaptive tuning. If the user
       // undoes within 2.5s we'll count it as a false trigger.
@@ -192,7 +197,10 @@ function WhiteboardPage() {
             exportData={() => canvasRef.current!.exportData()}
             loadData={(d) => canvasRef.current?.loadData(d)}
           />
-          <SettingsPanel settings={settings} update={update} />
+          {user && (
+            <Button asChild variant="ghost" size="icon" title="Rooms"><Link to="/rooms"><Users className="w-4 h-4" /></Link></Button>
+          )}
+          <SettingsPanel settings={settings} update={update} livePose={pose} />
           {user ? (
             <Button variant="ghost" size="icon" onClick={signOut} title="Sign out"><LogOut className="w-4 h-4" /></Button>
           ) : (
