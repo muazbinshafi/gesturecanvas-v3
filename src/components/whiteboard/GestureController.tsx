@@ -1,31 +1,34 @@
 /**
- * GestureController — webcam → MediaPipe HandLandmarker → emits gesture events.
+ * GestureController v2 — webcam → MediaPipe GestureRecognizer → emits events.
  *
- * Features:
- *  - Camera persistence (enabled / resolution / facingMode come from settings).
- *  - "Test Camera" button: runs getUserMedia synchronously inside the click,
- *    shows the preview, then loads MediaPipe and starts hand tracking.
- *  - Readiness checklist: HTTPS · getUserMedia · permission · model load.
+ * Engine:
+ *  - MediaPipe `GestureRecognizer` (pre-trained ML classifier) for static poses.
+ *  - Geometric pinch detector overrides ML when tips touch.
+ *  - ConfidenceStabilizer commits poses only after N consecutive frames whose
+ *    mean confidence ≥ threshold. Releasing back to NONE uses hysteresis.
+ *  - MotionDetector runs on the smoothed cursor for swipes / dwell.
+ *
+ * Camera persistence (enabled / resolution / facingMode) comes from settings.
  */
 import { useEffect, useRef, useState, useCallback } from "react";
-import { HandLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
+import { GestureRecognizer, FilesetResolver } from "@mediapipe/tasks-vision";
 import { Camera, CameraOff, Loader2, AlertCircle, Check, X, PlayCircle, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { classifyPose, PoseStabilizer, setPinchSensitivity } from "@/lib/whiteboard/poses";
 import { Vec2Filter } from "@/lib/whiteboard/oneEuro";
 import { toCanvas, type LM } from "@/lib/whiteboard/landmarks";
 import type { Pose } from "@/lib/whiteboard/types";
 import { parseResolution, type CameraFacing, type CameraResolution } from "@/lib/whiteboard/types";
 import { MotionDetector, DEFAULT_MOTION, type MotionConfig } from "@/lib/whiteboard/motionGestures";
+import { classifyFrame, ConfidenceStabilizer } from "@/lib/whiteboard/gestureEngineV2";
 
 export interface GestureFrame {
   pose: Pose;
   cursor: { x: number; y: number } | null;
   visible: boolean;
-  /** Confidence in the *candidate* pose, in [0,1] (count / stability threshold). */
+  /** Confidence of the *candidate* pose in [0,1]. */
   confidence: number;
-  /** The pose currently accumulating votes (may differ from `pose`). */
+  /** Pose currently accumulating votes (may differ from `pose`). */
   candidate: Pose;
 }
 
@@ -37,13 +40,13 @@ interface Props {
   resolution: CameraResolution;
   facingMode: CameraFacing;
   smoothing: { minCutoff: number; beta: number };
-  /** Frames a candidate pose must persist before being committed. */
+  /** Frames a candidate must persist before commit. */
   stabilityThreshold?: number;
-  /** Pinch sensitivity in [0,1]. Higher = recognizes wider gaps as pinch. */
+  /** Pinch sensitivity in [0,1]. */
   pinchSensitivity?: number;
-  /** Cursor sensitivity multiplier. 1 = raw, >1 amplifies hand motion around canvas center. */
+  /** Cursor sensitivity multiplier. */
   cursorGain?: number;
-  /** Optional motion gesture config (swipe/circle/dwell). */
+  /** Optional motion config. */
   motion?: Partial<MotionConfig>;
   onFrame: (f: GestureFrame) => void;
   onToggle: (enabled: boolean) => void;
@@ -53,7 +56,7 @@ interface Props {
 }
 
 const WASM_BASE = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
-const MODEL_CDN = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+const MODEL_CDN = "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/latest/gesture_recognizer.task";
 
 type ReadyState = "idle" | "loading" | "ready" | "error";
 type CheckState = "pending" | "ok" | "fail";
@@ -69,35 +72,35 @@ const INITIAL_CHECKS: Checklist = { https: "pending", api: "pending", permission
 
 export function GestureController({
   width, height, enabled, mirror, resolution, facingMode, smoothing,
-  stabilityThreshold = 3, pinchSensitivity = 0.5, cursorGain = 1.6, motion, onFrame, onToggle,
+  stabilityThreshold = 4, pinchSensitivity = 0.5, cursorGain = 1.6, motion, onFrame, onToggle,
   fullscreen = false, onToggleFullscreen, onStream,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const previewRef = useRef<HTMLCanvasElement>(null);
-  const landmarkerRef = useRef<HandLandmarker | null>(null);
+  const recognizerRef = useRef<GestureRecognizer | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const rafRef = useRef<number | null>(null);
   const filterRef = useRef(new Vec2Filter(smoothing.minCutoff, smoothing.beta));
-  const stabilizerRef = useRef(new PoseStabilizer(stabilityThreshold));
+  const stabilizerRef = useRef(new ConfidenceStabilizer(stabilityThreshold, 0.55));
   const motionRef = useRef(new MotionDetector({ ...DEFAULT_MOTION, ...motion }));
+  const pinchSensRef = useRef(pinchSensitivity);
   const [status, setStatus] = useState<ReadyState>("idle");
   const [errMsg, setErrMsg] = useState<string>("");
   const [fps, setFps] = useState(0);
   const [checks, setChecks] = useState<Checklist>(INITIAL_CHECKS);
 
   useEffect(() => { filterRef.current.set(smoothing.minCutoff, smoothing.beta); }, [smoothing.minCutoff, smoothing.beta]);
-  useEffect(() => { stabilizerRef.current.setThreshold(stabilityThreshold); }, [stabilityThreshold]);
+  useEffect(() => { stabilizerRef.current.setFrames(stabilityThreshold); }, [stabilityThreshold]);
   useEffect(() => { if (motion) motionRef.current.setConfig(motion); }, [motion]);
-  useEffect(() => { setPinchSensitivity(pinchSensitivity); }, [pinchSensitivity]);
+  useEffect(() => { pinchSensRef.current = pinchSensitivity; }, [pinchSensitivity]);
 
-  // Pre-flight passive checks (HTTPS + API support + permission state).
+  // Pre-flight passive checks.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const httpsOk = window.location.protocol === "https:" || window.location.hostname === "localhost";
     const apiOk = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
     setChecks((c) => ({ ...c, https: httpsOk ? "ok" : "fail", api: apiOk ? "ok" : "fail" }));
 
-    // Permission API is best-effort; Safari/iOS may not support it for camera.
     const perms = (navigator as Navigator & { permissions?: { query: (d: { name: PermissionName }) => Promise<PermissionStatus> } }).permissions;
     if (perms?.query) {
       perms.query({ name: "camera" as PermissionName })
@@ -105,7 +108,7 @@ export function GestureController({
           setChecks((c) => ({ ...c, permission: s.state === "granted" ? "ok" : s.state === "denied" ? "fail" : "pending" }));
           s.onchange = () => setChecks((c) => ({ ...c, permission: s.state === "granted" ? "ok" : s.state === "denied" ? "fail" : "pending" }));
         })
-        .catch(() => { /* not supported – stays pending until first request */ });
+        .catch(() => { /* not supported */ });
     }
   }, []);
 
@@ -125,18 +128,15 @@ export function GestureController({
     }
     const video = videoRef.current;
     if (video) { try { video.pause(); } catch { /* noop */ } video.srcObject = null; }
-    if (landmarkerRef.current) { try { landmarkerRef.current.close(); } catch { /* noop */ } landmarkerRef.current = null; }
+    if (recognizerRef.current) { try { recognizerRef.current.close(); } catch { /* noop */ } recognizerRef.current = null; }
+    stabilizerRef.current.reset();
+    motionRef.current.reset();
     onFrame({ pose: "NONE", cursor: null, visible: false, confidence: 0, candidate: "NONE" });
     setStatus("idle");
     setFps(0);
     setChecks((c) => ({ ...c, model: "pending" }));
   }
 
-  /**
-   * START — runs from a user click. Order matters:
-   * 1) Request the camera stream FIRST (still inside the gesture).
-   * 2) Then load the MediaPipe model.
-   */
   const handleStart = useCallback(async () => {
     if (!("mediaDevices" in navigator) || !navigator.mediaDevices?.getUserMedia) {
       const m = "Camera API not available. Use a modern browser over HTTPS.";
@@ -182,19 +182,22 @@ export function GestureController({
 
     try {
       const vision = await FilesetResolver.forVisionTasks(WASM_BASE);
-      const lm = await HandLandmarker.createFromOptions(vision, {
+      const rec = await GestureRecognizer.createFromOptions(vision, {
         baseOptions: { modelAssetPath: MODEL_CDN, delegate: "GPU" },
         runningMode: "VIDEO",
         numHands: 1,
+        minHandDetectionConfidence: 0.5,
+        minHandPresenceConfidence: 0.5,
+        minTrackingConfidence: 0.5,
       });
-      landmarkerRef.current = lm;
+      recognizerRef.current = rec;
       setChecks((c) => ({ ...c, model: "ok" }));
       setStatus("ready");
-      toast.success("Camera ready — hand tracking active.");
+      toast.success("Camera ready — gesture recognition active.");
       loop();
     } catch (e) {
       console.error("MediaPipe init failed:", e);
-      const msg = e instanceof Error ? e.message : "Hand-tracking model failed to load.";
+      const msg = e instanceof Error ? e.message : "Gesture model failed to load.";
       setChecks((c) => ({ ...c, model: "fail" }));
       setErrMsg(msg); setStatus("error"); toast.error(msg);
       stop();
@@ -202,9 +205,6 @@ export function GestureController({
     }
   }, [resolution, facingMode, onToggle]);
 
-  // When parent sets enabled=true (e.g. on reload from persisted setting),
-  // start automatically. Note: browsers may still require a user gesture for
-  // the very first permission grant; subsequent reloads work silently after grant.
   useEffect(() => {
     if (enabled && status === "idle") handleStart();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -214,38 +214,58 @@ export function GestureController({
     let last = performance.now();
     let frames = 0; let acc = 0;
     const step = () => {
-      const lm = landmarkerRef.current;
+      const rec = recognizerRef.current;
       const video = videoRef.current;
-      if (!lm || !video || video.readyState < 2) { rafRef.current = requestAnimationFrame(step); return; }
+      if (!rec || !video || video.readyState < 2) {
+        rafRef.current = requestAnimationFrame(step);
+        return;
+      }
       const t = performance.now();
       let result;
-      try { result = lm.detectForVideo(video, t); }
-      catch (e) { console.warn("detectForVideo error", e); rafRef.current = requestAnimationFrame(step); return; }
-      const preview = previewRef.current;
-      if (preview) drawPreview(preview, video, result.landmarks?.[0] as LM[] | undefined);
+      try { result = rec.recognizeForVideo(video, t); }
+      catch (e) {
+        console.warn("recognizeForVideo error", e);
+        rafRef.current = requestAnimationFrame(step);
+        return;
+      }
 
-      if (result.landmarks?.length) {
-        const hand = result.landmarks[0] as LM[];
-        const staticPose = stabilizerRef.current.push(classifyPose(hand));
-        const tip = toCanvas(hand[8], width, height, mirror);
-        // Apply cursor gain around canvas center, then clamp to bounds.
+      const landmarks = (result.landmarks?.[0] as LM[] | undefined) ?? null;
+      const top = result.gestures?.[0]?.[0];
+      const category = top?.categoryName ?? "";
+      const score = top?.score ?? 0;
+
+      const preview = previewRef.current;
+      if (preview) drawPreview(preview, video, landmarks ?? undefined);
+
+      if (landmarks) {
+        // Classify static pose (ML + geometric pinch override).
+        const out = classifyFrame({ category, score, landmarks }, 0.55, pinchSensRef.current);
+        const committed = stabilizerRef.current.push(out.pose, out.confidence);
+
+        // Cursor from index tip with gain around canvas center.
+        const tip = toCanvas(landmarks[8], width, height, mirror);
         const gx = (tip.x - width / 2) * cursorGain + width / 2;
         const gy = (tip.y - height / 2) * cursorGain + height / 2;
         const cx = Math.max(0, Math.min(width, gx));
         const cy = Math.max(0, Math.min(height, gy));
         const sm = filterRef.current.filter(cx, cy, t);
-        // Feed cursor into motion detector — only when index is up (DRAW/HOVER/PINCH)
-        // so swipes from other gestures don't fire spuriously.
-        const motionFeed = staticPose === "DRAW" || staticPose === "HOVER" || staticPose === "PINCH";
+
+        // Motion gestures only when index is up (DRAW/PINCH) — avoids spurious
+        // swipes from hand entering / leaving frame.
+        const motionFeed = committed === "DRAW" || committed === "PINCH";
         const motionPose = motionFeed ? motionRef.current.push(sm.x, sm.y, t) : null;
-        const finalPose: Pose = motionPose ?? staticPose;
+        if (!motionFeed) motionRef.current.reset();
+
+        const finalPose: Pose = motionPose ?? committed;
         onFrame({
-          pose: finalPose, cursor: sm, visible: true,
+          pose: finalPose,
+          cursor: sm,
+          visible: true,
           confidence: motionPose ? 1 : stabilizerRef.current.confidence(),
           candidate: motionPose ?? stabilizerRef.current.candidatePose(),
         });
       } else {
-        stabilizerRef.current.push("NONE");
+        stabilizerRef.current.push("NONE", 0);
         motionRef.current.reset();
         onFrame({ pose: "NONE", cursor: null, visible: false, confidence: 0, candidate: "NONE" });
       }
@@ -258,16 +278,12 @@ export function GestureController({
   }
 
   const onToggleClick = () => {
-    if (enabled) {
-      onToggle(false);
-    } else {
-      onToggle(true);
-      handleStart();
-    }
+    if (enabled) onToggle(false);
+    else { onToggle(true); handleStart(); }
   };
 
   const onTestClick = () => {
-    if (enabled) { stop(); }
+    if (enabled) stop();
     onToggle(true);
     handleStart();
   };
@@ -294,17 +310,16 @@ export function GestureController({
           )}
           {status === "idle" && !enabled && (
             <div className="absolute inset-0 flex items-center justify-center text-[10px] text-muted-foreground p-2 text-center">
-              Click “Test Camera” to start
+              Click "Test Camera" to start
             </div>
           )}
         </div>
 
-        {/* Readiness checklist */}
         <div className="mt-2 px-1 space-y-0.5">
           <CheckRow label="HTTPS / localhost" state={checks.https} />
           <CheckRow label="getUserMedia API" state={checks.api} />
           <CheckRow label="Camera permission" state={checks.permission} />
-          <CheckRow label="Hand model loaded" state={checks.model} />
+          <CheckRow label="Gesture model" state={checks.model} />
           <div className={`text-[10px] font-medium pt-0.5 ${allReady ? "text-success" : "text-muted-foreground"}`}>
             {allReady ? "✓ Camera ready" : "Waiting for checks…"}
           </div>
