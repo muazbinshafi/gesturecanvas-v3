@@ -9,7 +9,7 @@ import { OnboardingTour } from "@/components/whiteboard/OnboardingTour";
 import { QuickActionBar } from "@/components/whiteboard/QuickActionBar";
 import { Button } from "@/components/ui/button";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { useSyncEngine } from "@/hooks/useSyncEngine";
+import { useSyncEngine, type AppSettings } from "@/hooks/useSyncEngine";
 import { LogOut, Sparkles, Wifi, WifiOff, User, Users } from "lucide-react";
 import type { Tool } from "@/lib/whiteboard/types";
 import { BOARD_THEMES } from "@/lib/whiteboard/types";
