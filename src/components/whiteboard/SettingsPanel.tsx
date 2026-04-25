@@ -242,6 +242,44 @@ export function SettingsPanel({ settings, update, livePose = "" }: { settings: A
             </div>
           </section>
 
+          {/* MOTION GESTURES */}
+          <section>
+            <h3 className="text-sm font-semibold mb-2">Motion gestures</h3>
+            <p className="text-xs text-muted-foreground mb-2">
+              Detect swipes, circles, and dwell using cursor motion (only while index/peace/pinch is held). Disable to silence those poses.
+            </p>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={settings.motion.enabled}
+                onChange={(e) => update({ motion: { ...settings.motion, enabled: e.target.checked } })} />
+              Enable motion detection
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={settings.motion.circleEnabled}
+                onChange={(e) => update({ motion: { ...settings.motion, circleEnabled: e.target.checked } })} />
+              Detect circles (CW / CCW)
+            </label>
+            <label className="text-xs text-muted-foreground mt-2 block">Swipe min distance: {settings.motion.swipeMinDistance}px</label>
+            <input type="range" min={60} max={400} step={10} value={settings.motion.swipeMinDistance}
+              onChange={(e) => update({ motion: { ...settings.motion, swipeMinDistance: Number(e.target.value) } })}
+              className="w-full accent-primary" />
+            <label className="text-xs text-muted-foreground mt-2 block">Swipe max duration: {settings.motion.swipeMaxDuration}ms</label>
+            <input type="range" min={200} max={1500} step={50} value={settings.motion.swipeMaxDuration}
+              onChange={(e) => update({ motion: { ...settings.motion, swipeMaxDuration: Number(e.target.value) } })}
+              className="w-full accent-primary" />
+            <label className="text-xs text-muted-foreground mt-2 block">Dwell hold time: {settings.motion.dwellMs}ms</label>
+            <input type="range" min={300} max={2000} step={50} value={settings.motion.dwellMs}
+              onChange={(e) => update({ motion: { ...settings.motion, dwellMs: Number(e.target.value) } })}
+              className="w-full accent-primary" />
+            <label className="text-xs text-muted-foreground mt-2 block">Dwell radius: {settings.motion.dwellRadius}px</label>
+            <input type="range" min={6} max={60} step={2} value={settings.motion.dwellRadius}
+              onChange={(e) => update({ motion: { ...settings.motion, dwellRadius: Number(e.target.value) } })}
+              className="w-full accent-primary" />
+            <label className="text-xs text-muted-foreground mt-2 block">Circle min angle: {(settings.motion.circleMinAngle / Math.PI).toFixed(2)}π rad</label>
+            <input type="range" min={Math.PI} max={Math.PI * 3} step={0.1} value={settings.motion.circleMinAngle}
+              onChange={(e) => update({ motion: { ...settings.motion, circleMinAngle: Number(e.target.value) } })}
+              className="w-full accent-primary" />
+          </section>
+
           {/* CUSTOM MAPPINGS — gesture-to-action editor with reorder + live preview */}
           <CustomMappingsEditor
             mappings={settings.custom_mappings}
