@@ -223,34 +223,32 @@ export const DEFAULT_MAPPINGS: GestureMappings = {
   PAN: "pan",           // open palm → pan canvas
   ERASE: "eraser",      // closed fist → erase
   PINCH: "click",       // pinch thumb+index → click at cursor
-  // ── One-shot static poses (NEVER map to tools — would hijack the active tool) ─
-  PEACE: "undo",
-  THREE: "color_next",
-  FOUR: "color_prev",
-  FIVE_SPREAD: "save",
-  OK: "save",
-  ROCK: "size_up",
-  CALL: "screenshot",
-  GUN: "delete_selected",
-  L_SHAPE: "layer_next",
-  THUMBS_UP: "redo",
-  THUMBS_DOWN: "clear",
-  PINKY_UP: "size_down",
-  MIDDLE_UP: "size_up",
-  INDEX_DOWN: "add_sticky",
-  FIST_THUMB: "lock_canvas",
-  PALM_SIDE: "toggle_grid",
-  HEART: "theme_next",
-  // ── Motion gestures ─────────────────────────────────────────────────
-  SWIPE_LEFT: "undo",
-  SWIPE_RIGHT: "redo",
-  SWIPE_UP: "size_up",
-  SWIPE_DOWN: "size_down",
-  // Circle gestures kept in the type system but unmapped by default
-  // (circle motion detection is also disabled by default to avoid freezes).
+  // ── Extended poses reset to neutral by default for strict reliability ─
+  PEACE: "none",
+  THREE: "none",
+  FOUR: "none",
+  FIVE_SPREAD: "none",
+  OK: "none",
+  ROCK: "none",
+  CALL: "none",
+  GUN: "none",
+  L_SHAPE: "none",
+  THUMBS_UP: "none",
+  THUMBS_DOWN: "none",
+  PINKY_UP: "none",
+  MIDDLE_UP: "none",
+  INDEX_DOWN: "none",
+  FIST_THUMB: "none",
+  PALM_SIDE: "none",
+  HEART: "none",
+  // ── Motion gestures disabled by default ──────────────────────────────
+  SWIPE_LEFT: "none",
+  SWIPE_RIGHT: "none",
+  SWIPE_UP: "none",
+  SWIPE_DOWN: "none",
   CIRCLE_CW: "none",
   CIRCLE_CCW: "none",
-  DWELL: "add_text",
+  DWELL: "none",
 };
 export const DEFAULT_VOICE: VoiceSettings = { enabled: false, lang: "en-US" };
 export const DEFAULT_PALM: PalmRejectionSettings = { enabled: false, acceptedPointerTypes: ["pen", "mouse", "touch"] };
