@@ -94,6 +94,7 @@ const DEFAULTS: AppSettings = {
   autosave_interval: 30,
   pose_stability: 3,
   adaptive_stability: true,
+  pinch_sensitivity: 0.5,
   gesture_profiles: BUILTIN_PROFILES,
   active_profile_id: "",
   custom_mappings: [],
