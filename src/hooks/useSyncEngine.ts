@@ -151,6 +151,7 @@ export function useSyncEngine() {
           autosave_interval?: number;
           pose_stability?: number;
           adaptive_stability?: boolean;
+          pinch_sensitivity?: number;
           gesture_profiles?: GestureProfile[];
           active_profile_id?: string;
           custom_mappings?: CustomMapping[];
