@@ -227,6 +227,13 @@ export function SettingsPanel({ settings, update, livePose = "" }: { settings: A
             </div>
           </section>
 
+          {/* CUSTOM MAPPINGS — gesture-to-action editor with reorder + live preview */}
+          <CustomMappingsEditor
+            mappings={settings.custom_mappings}
+            onChange={(next) => update({ custom_mappings: next })}
+            livePose={livePose}
+          />
+
           {/* CUSTOM GESTURES */}
           <section>
             <h3 className="text-sm font-semibold mb-2">Custom gestures</h3>
