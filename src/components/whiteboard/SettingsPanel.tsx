@@ -9,6 +9,7 @@ import {
 import { TOOL_NAMES, ACTION_NAMES } from "@/lib/whiteboard/actions";
 import { BUILTIN_PROFILES, makeBlankProfile, type GestureProfile } from "@/lib/whiteboard/profiles";
 import { GestureTrainer } from "./GestureTrainer";
+import { CustomMappingsEditor } from "./CustomMappingsEditor";
 
 const RESOLUTIONS: CameraResolution[] = ["320x240", "640x480", "1280x720", "1920x1080"];
 const FACINGS: { value: CameraFacing; label: string }[] = [
@@ -50,7 +51,7 @@ const POSE_LABELS: { key: GesturePoseKey; label: string; hint: string; emoji: st
   { key: "THUMBS_DOWN", label: "Thumbs down 👎",        hint: "Default: clear board",   emoji: "👎", kind: "any" },
 ];
 
-export function SettingsPanel({ settings, update }: { settings: AppSettings; update: (p: Partial<AppSettings>) => void }) {
+export function SettingsPanel({ settings, update, livePose = "" }: { settings: AppSettings; update: (p: Partial<AppSettings>) => void; livePose?: string }) {
   const togglePose = (pose: string) => {
     const has = settings.disabled_poses.includes(pose);
     update({ disabled_poses: has ? settings.disabled_poses.filter((p) => p !== pose) : [...settings.disabled_poses, pose] });
