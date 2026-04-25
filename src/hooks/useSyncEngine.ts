@@ -184,6 +184,7 @@ export function useSyncEngine() {
           autosave_interval: ui.autosave_interval ?? 30,
           pose_stability: ui.pose_stability ?? 3,
           adaptive_stability: ui.adaptive_stability ?? true,
+          pinch_sensitivity: ui.pinch_sensitivity ?? 0.5,
           gesture_profiles: ui.gesture_profiles ?? BUILTIN_PROFILES,
           active_profile_id: ui.active_profile_id ?? "",
           custom_mappings: ui.custom_mappings ?? [],
