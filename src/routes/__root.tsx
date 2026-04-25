@@ -1,4 +1,5 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
 
@@ -29,14 +30,16 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Gesture Whiteboard — Draw with your hands" },
+      { name: "description", content: "AI-powered gesture-controlled whiteboard. Draw, sketch shapes, and recognise handwriting using your webcam — works offline." },
+      { name: "author", content: "Gesture Whiteboard" },
+      { name: "theme-color", content: "#1a1530" },
+      { property: "og:title", content: "Gesture Whiteboard — Draw with your hands" },
+      { property: "og:description", content: "AI-powered gesture-controlled whiteboard. Draw with your hand or mouse." },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Gesture Whiteboard — Draw with your hands" },
+      { name: "twitter:description", content: "AI-powered gesture-controlled whiteboard." },
     ],
     links: [
       {
@@ -65,5 +68,10 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <Toaster />
+    </>
+  );
 }
