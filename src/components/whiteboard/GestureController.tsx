@@ -221,16 +221,22 @@ export function GestureController({
 
       if (result.landmarks?.length) {
         const hand = result.landmarks[0] as LM[];
-        const pose = stabilizerRef.current.push(classifyPose(hand));
+        const staticPose = stabilizerRef.current.push(classifyPose(hand));
         const tip = toCanvas(hand[8], width, height, mirror);
         const sm = filterRef.current.filter(tip.x, tip.y, t);
+        // Feed cursor into motion detector — only when index is up (DRAW/HOVER/PINCH)
+        // so swipes from other gestures don't fire spuriously.
+        const motionFeed = staticPose === "DRAW" || staticPose === "HOVER" || staticPose === "PINCH";
+        const motionPose = motionFeed ? motionRef.current.push(sm.x, sm.y, t) : null;
+        const finalPose: Pose = motionPose ?? staticPose;
         onFrame({
-          pose, cursor: sm, visible: true,
-          confidence: stabilizerRef.current.confidence(),
-          candidate: stabilizerRef.current.candidatePose(),
+          pose: finalPose, cursor: sm, visible: true,
+          confidence: motionPose ? 1 : stabilizerRef.current.confidence(),
+          candidate: motionPose ?? stabilizerRef.current.candidatePose(),
         });
       } else {
         stabilizerRef.current.push("NONE");
+        motionRef.current.reset();
         onFrame({ pose: "NONE", cursor: null, visible: false, confidence: 0, candidate: "NONE" });
       }
 
