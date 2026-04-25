@@ -39,7 +39,7 @@ const POSE_LABELS: { key: GesturePoseKey; label: string; hint: string; emoji: st
   { key: "HOVER",       label: "Index + Middle up",     hint: "Cursor / hover",         emoji: "✌️", kind: "tool" },
   { key: "PAN",         label: "Closed fist",           hint: "Pan canvas",             emoji: "✊", kind: "tool" },
   { key: "ERASE",       label: "Open hand (5 fingers)", hint: "Erase",                  emoji: "🖐️", kind: "tool" },
-  { key: "PINCH",       label: "Pinch (thumb + index)", hint: "Select / move / zoom",   emoji: "🤏", kind: "tool" },
+  { key: "PINCH",       label: "Pinch (thumb + index)", hint: "Default: select / click hovered target",   emoji: "🤏", kind: "tool" },
   { key: "PEACE",       label: "Peace / V (spread)",    hint: "Default: undo",          emoji: "✌️", kind: "any" },
   { key: "THREE",       label: "Three fingers up",      hint: "Default: rectangle",     emoji: "🤟", kind: "any" },
   { key: "FOUR",        label: "Four fingers up",       hint: "Default: circle",        emoji: "✋", kind: "any" },
@@ -61,8 +61,8 @@ const POSE_LABELS: { key: GesturePoseKey; label: string; hint: string; emoji: st
   { key: "SWIPE_RIGHT", label: "Swipe right →",         hint: "Default: redo",          emoji: "➡️", kind: "any" },
   { key: "SWIPE_UP",    label: "Swipe up ↑",            hint: "Default: brush larger",  emoji: "⬆️", kind: "any" },
   { key: "SWIPE_DOWN",  label: "Swipe down ↓",          hint: "Default: brush smaller", emoji: "⬇️", kind: "any" },
-  { key: "CIRCLE_CW",   label: "Circle clockwise",      hint: "Default: zoom in",       emoji: "🔃", kind: "any" },
-  { key: "CIRCLE_CCW",  label: "Circle counter-CW",     hint: "Default: zoom out",      emoji: "🔄", kind: "any" },
+  { key: "CIRCLE_CW",   label: "Circle clockwise",      hint: "Off by default — enable in Motion below",      emoji: "🔃", kind: "any" },
+  { key: "CIRCLE_CCW",  label: "Circle counter-CW",     hint: "Off by default — enable in Motion below",      emoji: "🔄", kind: "any" },
   { key: "DWELL",       label: "Hold cursor still",     hint: "Default: add text",      emoji: "⏳", kind: "any" },
 ];
 
