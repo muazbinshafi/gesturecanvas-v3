@@ -12,7 +12,7 @@ import { HandLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import { Camera, CameraOff, Loader2, AlertCircle, Check, X, PlayCircle, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { classifyPose, PoseStabilizer } from "@/lib/whiteboard/poses";
+import { classifyPose, PoseStabilizer, setPinchSensitivity } from "@/lib/whiteboard/poses";
 import { Vec2Filter } from "@/lib/whiteboard/oneEuro";
 import { toCanvas, type LM } from "@/lib/whiteboard/landmarks";
 import type { Pose } from "@/lib/whiteboard/types";
