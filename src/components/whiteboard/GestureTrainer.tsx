@@ -75,6 +75,7 @@ const TOOL_META: Record<Tool, { icon: typeof Pencil; desc: string }> = {
 
 const ACTION_META: Record<GestureAction, { icon: typeof Pencil; desc: string }> = {
   none:              { icon: X,         desc: "Do nothing — gesture ignored" },
+  click:             { icon: MousePointer2, desc: "Tap / click on hovered target" },
   undo:              { icon: Undo2,     desc: "Undo last action" },
   redo:              { icon: Redo2,     desc: "Redo last undone action" },
   clear:             { icon: Trash2,    desc: "Clear the entire board" },
@@ -96,10 +97,7 @@ const ACTION_META: Record<GestureAction, { icon: typeof Pencil; desc: string }> 
   toggle_fullscreen: { icon: Maximize2, desc: "Toggle fullscreen mode" },
   duplicate:         { icon: Copy,      desc: "Duplicate selected object" },
   delete_selected:   { icon: Trash2,    desc: "Delete selected object" },
-  zoom_in:           { icon: Plus,      desc: "Zoom into the canvas" },
-  zoom_out:          { icon: Minus,     desc: "Zoom out of the canvas" },
-  zoom_reset:        { icon: RotateCcw, desc: "Reset zoom to 100%" },
-  fit_to_screen:     { icon: Maximize2, desc: "Fit content to viewport" },
+  // (zoom actions removed — were causing freezes via runaway redraws)
   theme_next:        { icon: Sparkles,  desc: "Cycle through board themes" },
   lock_canvas:       { icon: X,         desc: "Lock / unlock canvas editing" },
   add_sticky:        { icon: StickyNote,desc: "Drop a new sticky note" },

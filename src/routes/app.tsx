@@ -116,10 +116,9 @@ function WhiteboardPage() {
   const doToggleSnap = () => update({ snap_to_grid: !settings.snap_to_grid });
   const doToggleMirror = () => update({ mirror_camera: !settings.mirror_camera });
   const doTogglePalm = () => update({ palm: { ...settings.palm, enabled: !settings.palm.enabled } });
-  const doZoomIn = () => canvasRef.current?.zoomBy(1.2);
-  const doZoomOut = () => canvasRef.current?.zoomBy(1 / 1.2);
-  const doZoomReset = () => canvasRef.current?.resetViewport();
-  const doFitScreen = () => canvasRef.current?.resetViewport();
+  // Zoom actions removed — they caused runaway redraws and froze low-end laptops.
+  // Trackpad ctrl-scroll zoom on the canvas itself still works.
+  const doClick = () => canvasRef.current?.tapAtCursor?.();
   const doThemeNext = () => {
     const order: AppSettings["theme"][] = ["dark", "light", "sepia", "chalkboard", "blueprint"];
     const i = order.indexOf(settings.theme);
@@ -179,10 +178,7 @@ function WhiteboardPage() {
         toggleFullscreen: () => setFullscreen((f) => !f),
         duplicate: () => { /* requires selection support */ },
         deleteSelected: () => { /* requires selection support */ },
-        zoomIn: doZoomIn,
-        zoomOut: doZoomOut,
-        zoomReset: doZoomReset,
-        fitToScreen: doFitScreen,
+        click: doClick,
         themeNext: doThemeNext,
         lockCanvas: doLockCanvas,
         addSticky: doAddSticky,
