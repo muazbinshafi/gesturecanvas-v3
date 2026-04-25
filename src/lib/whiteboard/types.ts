@@ -15,9 +15,13 @@ export type Tool =
 export type Pose =
   | "DRAW" | "HOVER" | "PAN" | "ERASE" | "PINCH"
   | "ZOOM" | "ROTATE"
-  | "PEACE" | "THREE"
+  | "PEACE" | "THREE" | "FOUR" | "FIVE_SPREAD"
   | "OK" | "ROCK" | "CALL" | "GUN" | "L_SHAPE"
   | "THUMBS_UP" | "THUMBS_DOWN"
+  | "PINKY_UP" | "MIDDLE_UP" | "INDEX_DOWN"
+  | "FIST_THUMB" | "PALM_SIDE" | "HEART"
+  | "SWIPE_LEFT" | "SWIPE_RIGHT" | "SWIPE_UP" | "SWIPE_DOWN"
+  | "CIRCLE_CW" | "CIRCLE_CCW" | "DWELL"
   | "NONE";
 
 export type Layer = "ink" | "shapes" | "text" | "objects";
@@ -108,9 +112,16 @@ export type GestureAction =
   | "none"
   | "undo" | "redo" | "clear" | "save" | "screenshot"
   | "color_next" | "color_prev"
-  | "size_up" | "size_down"
-  | "layer_next" | "toggle_camera" | "toggle_grid"
-  | "toggle_fullscreen" | "duplicate" | "delete_selected";
+  | "size_up" | "size_down" | "size_min" | "size_max"
+  | "layer_next" | "layer_prev"
+  | "toggle_camera" | "toggle_grid" | "toggle_snap" | "toggle_mirror" | "toggle_palm"
+  | "toggle_fullscreen" | "duplicate" | "delete_selected"
+  | "zoom_in" | "zoom_out" | "zoom_reset" | "fit_to_screen"
+  | "theme_next" | "lock_canvas"
+  | "add_sticky" | "add_text"
+  | "copy" | "paste" | "select_all"
+  | "voice_toggle" | "smart_ink_cycle"
+  | "pen" | "eraser" | "highlighter_toggle";
 
 export interface GestureMappings {
   DRAW: Tool;
@@ -121,6 +132,8 @@ export interface GestureMappings {
   /** Optional extended pose → tool or action mapping. */
   PEACE?: Tool | GestureAction;
   THREE?: Tool | GestureAction;
+  FOUR?: Tool | GestureAction;
+  FIVE_SPREAD?: Tool | GestureAction;
   OK?: Tool | GestureAction;
   ROCK?: Tool | GestureAction;
   CALL?: Tool | GestureAction;
@@ -128,6 +141,19 @@ export interface GestureMappings {
   L_SHAPE?: Tool | GestureAction;
   THUMBS_UP?: Tool | GestureAction;
   THUMBS_DOWN?: Tool | GestureAction;
+  PINKY_UP?: Tool | GestureAction;
+  MIDDLE_UP?: Tool | GestureAction;
+  INDEX_DOWN?: Tool | GestureAction;
+  FIST_THUMB?: Tool | GestureAction;
+  PALM_SIDE?: Tool | GestureAction;
+  HEART?: Tool | GestureAction;
+  SWIPE_LEFT?: Tool | GestureAction;
+  SWIPE_RIGHT?: Tool | GestureAction;
+  SWIPE_UP?: Tool | GestureAction;
+  SWIPE_DOWN?: Tool | GestureAction;
+  CIRCLE_CW?: Tool | GestureAction;
+  CIRCLE_CCW?: Tool | GestureAction;
+  DWELL?: Tool | GestureAction;
 }
 
 export type CameraResolution = "320x240" | "640x480" | "1280x720" | "1920x1080";
@@ -198,6 +224,8 @@ export const DEFAULT_MAPPINGS: GestureMappings = {
   PINCH: "select",
   PEACE: "undo",
   THREE: "rect",
+  FOUR: "circle",
+  FIVE_SPREAD: "fit_to_screen",
   OK: "save",
   ROCK: "color_next",
   CALL: "screenshot",
@@ -205,6 +233,19 @@ export const DEFAULT_MAPPINGS: GestureMappings = {
   L_SHAPE: "layer_next",
   THUMBS_UP: "redo",
   THUMBS_DOWN: "clear",
+  PINKY_UP: "size_down",
+  MIDDLE_UP: "color_prev",
+  INDEX_DOWN: "add_sticky",
+  FIST_THUMB: "lock_canvas",
+  PALM_SIDE: "toggle_grid",
+  HEART: "theme_next",
+  SWIPE_LEFT: "undo",
+  SWIPE_RIGHT: "redo",
+  SWIPE_UP: "size_up",
+  SWIPE_DOWN: "size_down",
+  CIRCLE_CW: "zoom_in",
+  CIRCLE_CCW: "zoom_out",
+  DWELL: "add_text",
 };
 export const DEFAULT_VOICE: VoiceSettings = { enabled: false, lang: "en-US" };
 export const DEFAULT_PALM: PalmRejectionSettings = { enabled: false, acceptedPointerTypes: ["pen", "mouse", "touch"] };
