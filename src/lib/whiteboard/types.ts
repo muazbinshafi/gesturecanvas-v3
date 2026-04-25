@@ -217,15 +217,17 @@ export const DEFAULT_BRUSH: BrushSettings = { size: 4, color: "#a78bfa", smoothi
 export const DEFAULT_SMOOTHING: SmoothingSettings = { minCutoff: 1.2, beta: 0.015, preset: "studio" };
 export const DEFAULT_CAMERA: CameraSettings = { enabled: false, resolution: "640x480", facingMode: "user", numHands: 2 };
 export const DEFAULT_MAPPINGS: GestureMappings = {
+  // ── Continuous tools (held while pose is active) ─────────────────────
   DRAW: "pen",
-  HOVER: "select",
+  HOVER: "select",      // index up → cursor moves
   PAN: "pan",
   ERASE: "eraser",
-  PINCH: "select",
+  PINCH: "select",      // pinch acts like a click on hovered target
+  // ── One-shot static poses ───────────────────────────────────────────
   PEACE: "undo",
   THREE: "rect",
   FOUR: "circle",
-  FIVE_SPREAD: "fit_to_screen",
+  FIVE_SPREAD: "screenshot",
   OK: "save",
   ROCK: "color_next",
   CALL: "screenshot",
@@ -239,12 +241,15 @@ export const DEFAULT_MAPPINGS: GestureMappings = {
   FIST_THUMB: "lock_canvas",
   PALM_SIDE: "toggle_grid",
   HEART: "theme_next",
+  // ── Motion gestures ─────────────────────────────────────────────────
   SWIPE_LEFT: "undo",
   SWIPE_RIGHT: "redo",
   SWIPE_UP: "size_up",
   SWIPE_DOWN: "size_down",
-  CIRCLE_CW: "zoom_in",
-  CIRCLE_CCW: "zoom_out",
+  // Circle gestures kept in the type system but unmapped by default
+  // (circle motion detection is also disabled by default to avoid freezes).
+  CIRCLE_CW: "none",
+  CIRCLE_CCW: "none",
   DWELL: "add_text",
 };
 export const DEFAULT_VOICE: VoiceSettings = { enabled: false, lang: "en-US" };

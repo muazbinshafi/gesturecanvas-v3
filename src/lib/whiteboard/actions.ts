@@ -9,13 +9,13 @@ export const TOOL_NAMES: Tool[] = [
 
 export const ACTION_NAMES: GestureAction[] = [
   "none",
+  "click",
   "undo", "redo", "clear", "save", "screenshot",
   "color_next", "color_prev",
   "size_up", "size_down", "size_min", "size_max",
   "layer_next", "layer_prev",
   "toggle_camera", "toggle_grid", "toggle_snap", "toggle_mirror", "toggle_palm",
   "toggle_fullscreen", "duplicate", "delete_selected",
-  "zoom_in", "zoom_out", "zoom_reset", "fit_to_screen",
   "theme_next", "lock_canvas",
   "add_sticky", "add_text",
   "copy", "paste", "select_all",
@@ -50,10 +50,7 @@ export interface ActionContext {
   toggleFullscreen: () => void;
   duplicate: () => void;
   deleteSelected: () => void;
-  zoomIn?: () => void;
-  zoomOut?: () => void;
-  zoomReset?: () => void;
-  fitToScreen?: () => void;
+  click?: () => void;
   themeNext?: () => void;
   lockCanvas?: () => void;
   addSticky?: () => void;
@@ -95,10 +92,7 @@ export function runMapping(value: string | undefined, ctx: ActionContext) {
     case "toggle_fullscreen": return ctx.toggleFullscreen();
     case "duplicate": return ctx.duplicate();
     case "delete_selected": return ctx.deleteSelected();
-    case "zoom_in": return ctx.zoomIn?.();
-    case "zoom_out": return ctx.zoomOut?.();
-    case "zoom_reset": return ctx.zoomReset?.();
-    case "fit_to_screen": return ctx.fitToScreen?.();
+    case "click": return ctx.click?.();
     case "theme_next": return ctx.themeNext?.();
     case "lock_canvas": return ctx.lockCanvas?.();
     case "add_sticky": return ctx.addSticky?.();
