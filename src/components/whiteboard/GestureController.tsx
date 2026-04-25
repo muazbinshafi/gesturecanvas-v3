@@ -17,6 +17,7 @@ import { Vec2Filter } from "@/lib/whiteboard/oneEuro";
 import { toCanvas, type LM } from "@/lib/whiteboard/landmarks";
 import type { Pose } from "@/lib/whiteboard/types";
 import { parseResolution, type CameraFacing, type CameraResolution } from "@/lib/whiteboard/types";
+import { MotionDetector, DEFAULT_MOTION, type MotionConfig } from "@/lib/whiteboard/motionGestures";
 
 export interface GestureFrame {
   pose: Pose;
@@ -38,6 +39,8 @@ interface Props {
   smoothing: { minCutoff: number; beta: number };
   /** Frames a candidate pose must persist before being committed. */
   stabilityThreshold?: number;
+  /** Optional motion gesture config (swipe/circle/dwell). */
+  motion?: Partial<MotionConfig>;
   onFrame: (f: GestureFrame) => void;
   onToggle: (enabled: boolean) => void;
   fullscreen?: boolean;
@@ -62,7 +65,7 @@ const INITIAL_CHECKS: Checklist = { https: "pending", api: "pending", permission
 
 export function GestureController({
   width, height, enabled, mirror, resolution, facingMode, smoothing,
-  stabilityThreshold = 3, onFrame, onToggle,
+  stabilityThreshold = 3, motion, onFrame, onToggle,
   fullscreen = false, onToggleFullscreen, onStream,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -72,6 +75,7 @@ export function GestureController({
   const rafRef = useRef<number | null>(null);
   const filterRef = useRef(new Vec2Filter(smoothing.minCutoff, smoothing.beta));
   const stabilizerRef = useRef(new PoseStabilizer(stabilityThreshold));
+  const motionRef = useRef(new MotionDetector({ ...DEFAULT_MOTION, ...motion }));
   const [status, setStatus] = useState<ReadyState>("idle");
   const [errMsg, setErrMsg] = useState<string>("");
   const [fps, setFps] = useState(0);
@@ -79,6 +83,7 @@ export function GestureController({
 
   useEffect(() => { filterRef.current.set(smoothing.minCutoff, smoothing.beta); }, [smoothing.minCutoff, smoothing.beta]);
   useEffect(() => { stabilizerRef.current.setThreshold(stabilityThreshold); }, [stabilityThreshold]);
+  useEffect(() => { if (motion) motionRef.current.setConfig(motion); }, [motion]);
 
   // Pre-flight passive checks (HTTPS + API support + permission state).
   useEffect(() => {
