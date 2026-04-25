@@ -52,6 +52,8 @@ export interface AppSettings {
   pose_stability: number;
   /** When true, pose_stability is auto-tuned from recent false-trigger rate. */
   adaptive_stability: boolean;
+  /** Pinch sensitivity in [0,1]. Higher = wider gap counts as a pinch. */
+  pinch_sensitivity: number;
   /** Saved gesture profiles (built-in + user-created). */
   gesture_profiles: GestureProfile[];
   /** Currently active profile id. Empty = "manual" mode using top-level mappings. */
