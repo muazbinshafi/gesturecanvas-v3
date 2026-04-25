@@ -17,6 +17,7 @@ import { BUILTIN_PROFILES, type GestureProfile } from "@/lib/whiteboard/profiles
 
 export interface AppSettings {
   theme: BoardTheme;
+  gesture_config_version: number;
   gesture_mappings: GestureMappings;
   brush_settings: BrushSettings;
   smoothing: SmoothingSettings;
@@ -71,8 +72,53 @@ export interface AppSettings {
   updated_at: string;
 }
 
+const CURRENT_GESTURE_CONFIG_VERSION = 2;
+
+const STRICT_MOTION_DEFAULTS: MotionConfig = {
+  ...DEFAULT_MOTION,
+  enabled: false,
+  circleEnabled: false,
+  swipeMinDistance: 280,
+  swipeMaxDuration: 420,
+  dwellRadius: 12,
+  dwellMs: 1000,
+  circleMinAngle: Math.PI * 2.2,
+};
+
+function cloneProfiles(profiles: GestureProfile[]): GestureProfile[] {
+  return profiles.map((profile) => ({
+    ...profile,
+    gesture_mappings: { ...profile.gesture_mappings },
+    disabled_poses: [...profile.disabled_poses],
+  }));
+}
+
+function applyStrictGestureReset(settings: AppSettings): AppSettings {
+  return {
+    ...settings,
+    gesture_config_version: CURRENT_GESTURE_CONFIG_VERSION,
+    gesture_mappings: { ...DEFAULT_MAPPINGS },
+    custom_gestures: [],
+    disabled_poses: [],
+    pose_stability: 5,
+    adaptive_stability: false,
+    pinch_sensitivity: 0.65,
+    cursor_gain: 1.75,
+    gesture_profiles: cloneProfiles(BUILTIN_PROFILES),
+    active_profile_id: "",
+    custom_mappings: [],
+    motion: { ...STRICT_MOTION_DEFAULTS },
+  };
+}
+
+function normalizeLoadedSettings(settings: AppSettings): AppSettings {
+  if ((settings.gesture_config_version ?? 0) >= CURRENT_GESTURE_CONFIG_VERSION) return settings;
+  return applyStrictGestureReset(settings);
+}
+
 const DEFAULTS: AppSettings = {
   theme: "dark",
+  gesture_config_version: CURRENT_GESTURE_CONFIG_VERSION,
   gesture_mappings: DEFAULT_MAPPINGS,
   brush_settings: DEFAULT_BRUSH,
   smoothing: DEFAULT_SMOOTHING,
@@ -94,14 +140,14 @@ const DEFAULTS: AppSettings = {
   sound_effects: false,
   hand_cursor_color: "#a78bfa",
   autosave_interval: 30,
-  pose_stability: 3,
-  adaptive_stability: true,
-  pinch_sensitivity: 0.5,
-  cursor_gain: 1.6,
-  gesture_profiles: BUILTIN_PROFILES,
+  pose_stability: 5,
+  adaptive_stability: false,
+  pinch_sensitivity: 0.65,
+  cursor_gain: 1.75,
+  gesture_profiles: cloneProfiles(BUILTIN_PROFILES),
   active_profile_id: "",
   custom_mappings: [],
-  motion: DEFAULT_MOTION,
+  motion: STRICT_MOTION_DEFAULTS,
   highlighter: false,
   canvas_locked: false,
   updated_at: new Date(0).toISOString(),
@@ -116,7 +162,12 @@ export function useSyncEngine() {
   const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
-    idbGet<AppSettings>("settings", LOCAL_KEY).then((s) => { if (s) setSettings({ ...DEFAULTS, ...s }); });
+    idbGet<AppSettings>("settings", LOCAL_KEY).then((s) => {
+      if (!s) return;
+      const next = normalizeLoadedSettings({ ...DEFAULTS, ...s });
+      setSettings(next);
+      if (next !== s) idbSet("settings", LOCAL_KEY, next);
+    });
   }, []);
 
   useEffect(() => {
@@ -165,6 +216,7 @@ export function useSyncEngine() {
         }) ?? {};
         const remote: AppSettings = {
           theme: (ui.theme ?? (data.theme as BoardTheme) ?? "dark"),
+          gesture_config_version: ui.gesture_config_version ?? 0,
           gesture_mappings: { ...DEFAULT_MAPPINGS, ...(data.gesture_mappings as object) } as GestureMappings,
           brush_settings: { ...DEFAULT_BRUSH, ...(data.brush_settings as object) } as BrushSettings,
           smoothing: { ...DEFAULT_SMOOTHING, ...(data.smoothing as object) } as SmoothingSettings,
@@ -186,26 +238,27 @@ export function useSyncEngine() {
           sound_effects: ui.sound_effects ?? false,
           hand_cursor_color: ui.hand_cursor_color ?? "#a78bfa",
           autosave_interval: ui.autosave_interval ?? 30,
-          pose_stability: ui.pose_stability ?? 3,
-          adaptive_stability: ui.adaptive_stability ?? true,
-          pinch_sensitivity: ui.pinch_sensitivity ?? 0.5,
-          cursor_gain: ui.cursor_gain ?? 1.6,
-          gesture_profiles: ui.gesture_profiles ?? BUILTIN_PROFILES,
+          pose_stability: ui.pose_stability ?? DEFAULTS.pose_stability,
+          adaptive_stability: ui.adaptive_stability ?? DEFAULTS.adaptive_stability,
+          pinch_sensitivity: ui.pinch_sensitivity ?? DEFAULTS.pinch_sensitivity,
+          cursor_gain: ui.cursor_gain ?? DEFAULTS.cursor_gain,
+          gesture_profiles: ui.gesture_profiles ? cloneProfiles(ui.gesture_profiles) : cloneProfiles(BUILTIN_PROFILES),
           active_profile_id: ui.active_profile_id ?? "",
           custom_mappings: ui.custom_mappings ?? [],
-          motion: { ...DEFAULT_MOTION, ...(ui.motion ?? {}) },
+          motion: { ...STRICT_MOTION_DEFAULTS, ...(ui.motion ?? {}) },
           highlighter: ui.highlighter ?? false,
           canvas_locked: ui.canvas_locked ?? false,
           updated_at: data.updated_at,
         };
         const local = await idbGet<AppSettings>("settings", LOCAL_KEY);
         const winner = !local || new Date(remote.updated_at) >= new Date(local.updated_at) ? remote : local;
-        setSettings(winner);
-        await idbSet("settings", LOCAL_KEY, winner);
-        if (winner === local) await pushRemote(user.id, winner);
+        const normalizedWinner = normalizeLoadedSettings(winner);
+        setSettings(normalizedWinner);
+        await idbSet("settings", LOCAL_KEY, normalizedWinner);
+        if (normalizedWinner !== winner || winner === local) await pushRemote(user.id, normalizedWinner);
       } else {
         const local = await idbGet<AppSettings>("settings", LOCAL_KEY);
-        if (local) await pushRemote(user.id, local);
+        if (local) await pushRemote(user.id, normalizeLoadedSettings(local));
       }
       setSyncing(false);
     })();
@@ -233,6 +286,7 @@ async function pushRemote(userId: string, s: AppSettings) {
     smart_ink_mode: s.smart_ink_mode,
     ui_layout: {
       theme: s.theme,
+      gesture_config_version: s.gesture_config_version,
       mirror_camera: s.mirror_camera,
       camera: s.camera,
       voice: s.voice,
