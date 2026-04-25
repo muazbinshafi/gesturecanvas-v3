@@ -247,6 +247,7 @@ async function pushRemote(userId: string, s: AppSettings) {
       autosave_interval: s.autosave_interval,
       pose_stability: s.pose_stability,
       adaptive_stability: s.adaptive_stability,
+      pinch_sensitivity: s.pinch_sensitivity,
       gesture_profiles: s.gesture_profiles,
       active_profile_id: s.active_profile_id,
       custom_mappings: s.custom_mappings,
