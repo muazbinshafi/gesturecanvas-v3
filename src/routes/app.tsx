@@ -150,8 +150,20 @@ function WhiteboardPage() {
   };
   const doHighlighterToggle = () => update({ highlighter: !settings.highlighter });
 
+  // Per-action throttle. Continuous *tools* (pen/eraser/select/pan/...) are
+  // held while the pose is active and must NOT be throttled. One-shot
+  // *actions* (undo/save/screenshot/...) are throttled to 600ms each so a
+  // single sustained pose can't fire dozens of state mutations per second —
+  // a known cause of preview freezes on weaker devices.
+  const lastFireRef = useRef<Map<string, number>>(new Map());
+  const isContinuousTool = (m: string) =>
+    m === "pen" || m === "eraser" || m === "select" || m === "pan" ||
+    m === "rect" || m === "circle" || m === "arrow" || m === "text" ||
+    m === "sticky" || m === "image";
+
   function onFrame(f: GestureFrame) {
     setPose(f.pose);
+    if (f.cursor) lastCursorRef.current = f.cursor;
     if (settings.disabled_poses.includes(f.pose)) {
       canvasRef.current?.applyGestureCursor(f.pose, f.cursor);
       return;
@@ -161,10 +173,20 @@ function WhiteboardPage() {
     const mapped = customWinner
       ? customWinner.action
       : settings.gesture_mappings[f.pose as keyof typeof settings.gesture_mappings];
-    if (mapped && f.pose !== "NONE") {
+    if (mapped && f.pose !== "NONE" && mapped !== "none") {
+      // Throttle non-tool actions to prevent runaway repeats / freezes.
+      const now = performance.now();
+      if (!isContinuousTool(mapped)) {
+        const last = lastFireRef.current.get(mapped) ?? 0;
+        if (now - last < 600) {
+          canvasRef.current?.applyGestureCursor(f.pose, f.cursor);
+          return;
+        }
+        lastFireRef.current.set(mapped, now);
+      }
       // Record this as an "action" candidate for adaptive tuning. If the user
       // undoes within 2.5s we'll count it as a false trigger.
-      if (mapped !== "none" && mapped !== "undo") adaptRef.current.noteAction();
+      if (mapped !== "undo") adaptRef.current.noteAction();
 
       runMapping(mapped, {
         setTool: (t) => { if (t !== tool) setTool(t); },
