@@ -141,7 +141,7 @@ const DEFAULTS: AppSettings = {
   sound_effects: false,
   hand_cursor_color: "#a78bfa",
   autosave_interval: 30,
-  pose_stability: 5,
+  pose_stability: 7,
   adaptive_stability: false,
   pinch_sensitivity: 0.65,
   cursor_gain: 1.75,
