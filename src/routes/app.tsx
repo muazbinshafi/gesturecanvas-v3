@@ -364,6 +364,7 @@ function WhiteboardPage() {
           smoothing={settings.smoothing}
           stabilityThreshold={effectiveStability}
           pinchSensitivity={settings.pinch_sensitivity}
+          cursorGain={settings.cursor_gain}
           motion={settings.motion}
           onFrame={onFrame}
           onToggle={handleCameraToggle}

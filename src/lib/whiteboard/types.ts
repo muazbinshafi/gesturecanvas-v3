@@ -128,7 +128,7 @@ export interface GestureMappings {
   HOVER: Tool;
   PAN: Tool;
   ERASE: Tool;
-  PINCH: Tool;
+  PINCH: Tool | GestureAction;
   /** Optional extended pose → tool or action mapping. */
   PEACE?: Tool | GestureAction;
   THREE?: Tool | GestureAction;
@@ -218,25 +218,25 @@ export const DEFAULT_SMOOTHING: SmoothingSettings = { minCutoff: 1.2, beta: 0.01
 export const DEFAULT_CAMERA: CameraSettings = { enabled: false, resolution: "640x480", facingMode: "user", numHands: 2 };
 export const DEFAULT_MAPPINGS: GestureMappings = {
   // ── Continuous tools (held while pose is active) ─────────────────────
-  DRAW: "pen",
-  HOVER: "select",      // index up → cursor moves
-  PAN: "pan",
-  ERASE: "eraser",
-  PINCH: "select",      // pinch acts like a click on hovered target
-  // ── One-shot static poses ───────────────────────────────────────────
+  DRAW: "pen",          // index up → draw
+  HOVER: "select",      // index up (relaxed) → cursor moves
+  PAN: "pan",           // open palm → pan canvas
+  ERASE: "eraser",      // closed fist → erase
+  PINCH: "click",       // pinch thumb+index → click at cursor
+  // ── One-shot static poses (NEVER map to tools — would hijack the active tool) ─
   PEACE: "undo",
-  THREE: "rect",
-  FOUR: "circle",
-  FIVE_SPREAD: "screenshot",
+  THREE: "color_next",
+  FOUR: "color_prev",
+  FIVE_SPREAD: "save",
   OK: "save",
-  ROCK: "color_next",
+  ROCK: "size_up",
   CALL: "screenshot",
   GUN: "delete_selected",
   L_SHAPE: "layer_next",
   THUMBS_UP: "redo",
   THUMBS_DOWN: "clear",
   PINKY_UP: "size_down",
-  MIDDLE_UP: "color_prev",
+  MIDDLE_UP: "size_up",
   INDEX_DOWN: "add_sticky",
   FIST_THUMB: "lock_canvas",
   PALM_SIDE: "toggle_grid",

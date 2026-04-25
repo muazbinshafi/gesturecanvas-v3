@@ -41,6 +41,8 @@ interface Props {
   stabilityThreshold?: number;
   /** Pinch sensitivity in [0,1]. Higher = recognizes wider gaps as pinch. */
   pinchSensitivity?: number;
+  /** Cursor sensitivity multiplier. 1 = raw, >1 amplifies hand motion around canvas center. */
+  cursorGain?: number;
   /** Optional motion gesture config (swipe/circle/dwell). */
   motion?: Partial<MotionConfig>;
   onFrame: (f: GestureFrame) => void;
@@ -67,7 +69,7 @@ const INITIAL_CHECKS: Checklist = { https: "pending", api: "pending", permission
 
 export function GestureController({
   width, height, enabled, mirror, resolution, facingMode, smoothing,
-  stabilityThreshold = 3, pinchSensitivity = 0.5, motion, onFrame, onToggle,
+  stabilityThreshold = 3, pinchSensitivity = 0.5, cursorGain = 1.6, motion, onFrame, onToggle,
   fullscreen = false, onToggleFullscreen, onStream,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -226,7 +228,12 @@ export function GestureController({
         const hand = result.landmarks[0] as LM[];
         const staticPose = stabilizerRef.current.push(classifyPose(hand));
         const tip = toCanvas(hand[8], width, height, mirror);
-        const sm = filterRef.current.filter(tip.x, tip.y, t);
+        // Apply cursor gain around canvas center, then clamp to bounds.
+        const gx = (tip.x - width / 2) * cursorGain + width / 2;
+        const gy = (tip.y - height / 2) * cursorGain + height / 2;
+        const cx = Math.max(0, Math.min(width, gx));
+        const cy = Math.max(0, Math.min(height, gy));
+        const sm = filterRef.current.filter(cx, cy, t);
         // Feed cursor into motion detector — only when index is up (DRAW/HOVER/PINCH)
         // so swipes from other gestures don't fire spuriously.
         const motionFeed = staticPose === "DRAW" || staticPose === "HOVER" || staticPose === "PINCH";

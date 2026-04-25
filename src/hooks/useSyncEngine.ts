@@ -54,6 +54,8 @@ export interface AppSettings {
   adaptive_stability: boolean;
   /** Pinch sensitivity in [0,1]. Higher = wider gap counts as a pinch. */
   pinch_sensitivity: number;
+  /** Cursor sensitivity multiplier in [0.5, 3]. Higher = small hand moves cover more screen. */
+  cursor_gain: number;
   /** Saved gesture profiles (built-in + user-created). */
   gesture_profiles: GestureProfile[];
   /** Currently active profile id. Empty = "manual" mode using top-level mappings. */
@@ -95,6 +97,7 @@ const DEFAULTS: AppSettings = {
   pose_stability: 3,
   adaptive_stability: true,
   pinch_sensitivity: 0.5,
+  cursor_gain: 1.6,
   gesture_profiles: BUILTIN_PROFILES,
   active_profile_id: "",
   custom_mappings: [],
@@ -152,6 +155,7 @@ export function useSyncEngine() {
           pose_stability?: number;
           adaptive_stability?: boolean;
           pinch_sensitivity?: number;
+          cursor_gain?: number;
           gesture_profiles?: GestureProfile[];
           active_profile_id?: string;
           custom_mappings?: CustomMapping[];
@@ -185,6 +189,7 @@ export function useSyncEngine() {
           pose_stability: ui.pose_stability ?? 3,
           adaptive_stability: ui.adaptive_stability ?? true,
           pinch_sensitivity: ui.pinch_sensitivity ?? 0.5,
+          cursor_gain: ui.cursor_gain ?? 1.6,
           gesture_profiles: ui.gesture_profiles ?? BUILTIN_PROFILES,
           active_profile_id: ui.active_profile_id ?? "",
           custom_mappings: ui.custom_mappings ?? [],
