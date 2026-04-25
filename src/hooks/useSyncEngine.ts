@@ -74,7 +74,7 @@ export interface AppSettings {
 
 const CURRENT_GESTURE_CONFIG_VERSION = 2;
 
-const STRICT_MOTION_DEFAULTS: MotionConfig = {
+export const STRICT_MOTION_DEFAULTS: MotionConfig = {
   ...DEFAULT_MOTION,
   enabled: false,
   circleEnabled: false,
@@ -93,7 +93,7 @@ function cloneProfiles(profiles: GestureProfile[]): GestureProfile[] {
   }));
 }
 
-function applyStrictGestureReset(settings: AppSettings): AppSettings {
+export function applyStrictGestureReset(settings: AppSettings): AppSettings {
   return {
     ...settings,
     gesture_config_version: CURRENT_GESTURE_CONFIG_VERSION,
@@ -185,6 +185,7 @@ export function useSyncEngine() {
       const { data } = await supabase.from("user_settings").select("*").eq("user_id", user.id).maybeSingle();
       if (data) {
         const ui = (data.ui_layout as {
+          gesture_config_version?: number;
           mirror_camera?: boolean;
           camera?: Partial<CameraSettings>;
           theme?: BoardTheme;
