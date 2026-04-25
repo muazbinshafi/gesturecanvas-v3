@@ -506,6 +506,22 @@ export function SettingsPanel({ settings, update, livePose = "" }: { settings: A
               Adaptive stability — auto-tune from your false-trigger rate
             </label>
             <p className="text-[10px] text-muted-foreground">When you undo right after a gesture-driven action, the threshold creeps up. Calms down when you stop undoing.</p>
+
+            <label className="text-xs text-muted-foreground mt-3 block">
+              Pinch sensitivity: {Math.round(settings.pinch_sensitivity * 100)}%
+              <span className="ml-1 text-[10px]">
+                ({settings.pinch_sensitivity < 0.25 ? "strict — must touch" :
+                  settings.pinch_sensitivity < 0.55 ? "balanced (~3-4 cm)" :
+                  settings.pinch_sensitivity < 0.8 ? "loose (~5-6 cm)" : "very loose"})
+              </span>
+            </label>
+            <input type="range" min={0} max={1} step={0.05} value={settings.pinch_sensitivity}
+              onChange={(e) => update({ pinch_sensitivity: Number(e.target.value) })}
+              className="w-full accent-primary" />
+            <p className="text-[10px] text-muted-foreground">
+              Pinch is normalized to your palm size, so it works at any camera distance.
+              Increase if a 2-3 cm gap between thumb &amp; index isn’t recognized; decrease for fewer accidental pinches.
+            </p>
           </section>
 
           {/* ACCESSIBILITY */}

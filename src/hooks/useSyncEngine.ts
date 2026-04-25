@@ -52,6 +52,8 @@ export interface AppSettings {
   pose_stability: number;
   /** When true, pose_stability is auto-tuned from recent false-trigger rate. */
   adaptive_stability: boolean;
+  /** Pinch sensitivity in [0,1]. Higher = wider gap counts as a pinch. */
+  pinch_sensitivity: number;
   /** Saved gesture profiles (built-in + user-created). */
   gesture_profiles: GestureProfile[];
   /** Currently active profile id. Empty = "manual" mode using top-level mappings. */
@@ -92,6 +94,7 @@ const DEFAULTS: AppSettings = {
   autosave_interval: 30,
   pose_stability: 3,
   adaptive_stability: true,
+  pinch_sensitivity: 0.5,
   gesture_profiles: BUILTIN_PROFILES,
   active_profile_id: "",
   custom_mappings: [],
@@ -148,6 +151,7 @@ export function useSyncEngine() {
           autosave_interval?: number;
           pose_stability?: number;
           adaptive_stability?: boolean;
+          pinch_sensitivity?: number;
           gesture_profiles?: GestureProfile[];
           active_profile_id?: string;
           custom_mappings?: CustomMapping[];
@@ -180,6 +184,7 @@ export function useSyncEngine() {
           autosave_interval: ui.autosave_interval ?? 30,
           pose_stability: ui.pose_stability ?? 3,
           adaptive_stability: ui.adaptive_stability ?? true,
+          pinch_sensitivity: ui.pinch_sensitivity ?? 0.5,
           gesture_profiles: ui.gesture_profiles ?? BUILTIN_PROFILES,
           active_profile_id: ui.active_profile_id ?? "",
           custom_mappings: ui.custom_mappings ?? [],
@@ -242,6 +247,7 @@ async function pushRemote(userId: string, s: AppSettings) {
       autosave_interval: s.autosave_interval,
       pose_stability: s.pose_stability,
       adaptive_stability: s.adaptive_stability,
+      pinch_sensitivity: s.pinch_sensitivity,
       gesture_profiles: s.gesture_profiles,
       active_profile_id: s.active_profile_id,
       custom_mappings: s.custom_mappings,

@@ -12,7 +12,7 @@ import { HandLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import { Camera, CameraOff, Loader2, AlertCircle, Check, X, PlayCircle, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { classifyPose, PoseStabilizer } from "@/lib/whiteboard/poses";
+import { classifyPose, PoseStabilizer, setPinchSensitivity } from "@/lib/whiteboard/poses";
 import { Vec2Filter } from "@/lib/whiteboard/oneEuro";
 import { toCanvas, type LM } from "@/lib/whiteboard/landmarks";
 import type { Pose } from "@/lib/whiteboard/types";
@@ -39,6 +39,8 @@ interface Props {
   smoothing: { minCutoff: number; beta: number };
   /** Frames a candidate pose must persist before being committed. */
   stabilityThreshold?: number;
+  /** Pinch sensitivity in [0,1]. Higher = recognizes wider gaps as pinch. */
+  pinchSensitivity?: number;
   /** Optional motion gesture config (swipe/circle/dwell). */
   motion?: Partial<MotionConfig>;
   onFrame: (f: GestureFrame) => void;
@@ -65,7 +67,7 @@ const INITIAL_CHECKS: Checklist = { https: "pending", api: "pending", permission
 
 export function GestureController({
   width, height, enabled, mirror, resolution, facingMode, smoothing,
-  stabilityThreshold = 3, motion, onFrame, onToggle,
+  stabilityThreshold = 3, pinchSensitivity = 0.5, motion, onFrame, onToggle,
   fullscreen = false, onToggleFullscreen, onStream,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -84,6 +86,7 @@ export function GestureController({
   useEffect(() => { filterRef.current.set(smoothing.minCutoff, smoothing.beta); }, [smoothing.minCutoff, smoothing.beta]);
   useEffect(() => { stabilizerRef.current.setThreshold(stabilityThreshold); }, [stabilityThreshold]);
   useEffect(() => { if (motion) motionRef.current.setConfig(motion); }, [motion]);
+  useEffect(() => { setPinchSensitivity(pinchSensitivity); }, [pinchSensitivity]);
 
   // Pre-flight passive checks (HTTPS + API support + permission state).
   useEffect(() => {
