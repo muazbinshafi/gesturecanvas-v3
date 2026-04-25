@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { SmartCanvas, type SmartCanvasHandle } from "@/components/whiteboard/SmartCanvas";
 import { Toolbar } from "@/components/whiteboard/Toolbar";
@@ -106,13 +107,27 @@ function WhiteboardPage() {
     const d = canvasRef.current?.exportData();
     if (d) saveLocalBoard(LOCAL_BOARD_ID, d);
   };
+  // Screenshot is captured to a Blob and offered via a toast — never auto-downloaded.
+  // The user must click "Download" or "Copy" to actually save / copy the PNG.
   const doScreenshot = async () => {
     const blob = await canvasRef.current?.exportPNG(BOARD_THEMES[settings.theme].bg);
     if (!blob) return;
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = `board-${Date.now()}.png`; a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    const cleanup = () => setTimeout(() => URL.revokeObjectURL(url), 30_000);
+    toast.success("Screenshot ready", {
+      description: "Click Download to save the PNG.",
+      duration: 8000,
+      action: {
+        label: "Download",
+        onClick: () => {
+          const a = document.createElement("a");
+          a.href = url; a.download = `board-${Date.now()}.png`;
+          document.body.appendChild(a); a.click(); a.remove();
+          cleanup();
+        },
+      },
+    });
+    cleanup();
   };
   const doToggleGrid = () => update({ show_grid: !settings.show_grid });
   const doToggleSnap = () => update({ snap_to_grid: !settings.snap_to_grid });
