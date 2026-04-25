@@ -39,6 +39,8 @@ interface Props {
   smoothing: { minCutoff: number; beta: number };
   /** Frames a candidate pose must persist before being committed. */
   stabilityThreshold?: number;
+  /** Pinch sensitivity in [0,1]. Higher = recognizes wider gaps as pinch. */
+  pinchSensitivity?: number;
   /** Optional motion gesture config (swipe/circle/dwell). */
   motion?: Partial<MotionConfig>;
   onFrame: (f: GestureFrame) => void;
