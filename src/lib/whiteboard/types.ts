@@ -110,13 +110,13 @@ export const SMOOTHING_PRESETS: Record<Exclude<SmoothingPreset, "custom">, { min
  */
 export type GestureAction =
   | "none"
+  | "click"
   | "undo" | "redo" | "clear" | "save" | "screenshot"
   | "color_next" | "color_prev"
   | "size_up" | "size_down" | "size_min" | "size_max"
   | "layer_next" | "layer_prev"
   | "toggle_camera" | "toggle_grid" | "toggle_snap" | "toggle_mirror" | "toggle_palm"
   | "toggle_fullscreen" | "duplicate" | "delete_selected"
-  | "zoom_in" | "zoom_out" | "zoom_reset" | "fit_to_screen"
   | "theme_next" | "lock_canvas"
   | "add_sticky" | "add_text"
   | "copy" | "paste" | "select_all"
