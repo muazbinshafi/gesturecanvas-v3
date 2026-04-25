@@ -12,6 +12,7 @@ import {
   type PalmRejectionSettings, type SmoothingSettings, type VoiceSettings,
   type CustomGestureTemplate, type CustomMapping, type Layer,
 } from "@/lib/whiteboard/types";
+import { DEFAULT_MOTION, type MotionConfig } from "@/lib/whiteboard/motionGestures";
 import { BUILTIN_PROFILES, type GestureProfile } from "@/lib/whiteboard/profiles";
 
 export interface AppSettings {
@@ -57,6 +58,12 @@ export interface AppSettings {
   active_profile_id: string;
   /** User-authored gesture-to-action overrides. Checked before gesture_mappings. */
   custom_mappings: CustomMapping[];
+  /** Motion gesture config (swipes, circles, dwell). */
+  motion: MotionConfig;
+  /** Highlighter mode toggles brush opacity / blend. */
+  highlighter: boolean;
+  /** Canvas locked from edits. */
+  canvas_locked: boolean;
   updated_at: string;
 }
 
@@ -88,6 +95,9 @@ const DEFAULTS: AppSettings = {
   gesture_profiles: BUILTIN_PROFILES,
   active_profile_id: "",
   custom_mappings: [],
+  motion: DEFAULT_MOTION,
+  highlighter: false,
+  canvas_locked: false,
   updated_at: new Date(0).toISOString(),
 };
 
@@ -141,6 +151,9 @@ export function useSyncEngine() {
           gesture_profiles?: GestureProfile[];
           active_profile_id?: string;
           custom_mappings?: CustomMapping[];
+          motion?: Partial<MotionConfig>;
+          highlighter?: boolean;
+          canvas_locked?: boolean;
         }) ?? {};
         const remote: AppSettings = {
           theme: (ui.theme ?? (data.theme as BoardTheme) ?? "dark"),
@@ -170,6 +183,9 @@ export function useSyncEngine() {
           gesture_profiles: ui.gesture_profiles ?? BUILTIN_PROFILES,
           active_profile_id: ui.active_profile_id ?? "",
           custom_mappings: ui.custom_mappings ?? [],
+          motion: { ...DEFAULT_MOTION, ...(ui.motion ?? {}) },
+          highlighter: ui.highlighter ?? false,
+          canvas_locked: ui.canvas_locked ?? false,
           updated_at: data.updated_at,
         };
         const local = await idbGet<AppSettings>("settings", LOCAL_KEY);
@@ -229,6 +245,9 @@ async function pushRemote(userId: string, s: AppSettings) {
       gesture_profiles: s.gesture_profiles,
       active_profile_id: s.active_profile_id,
       custom_mappings: s.custom_mappings,
+      motion: s.motion,
+      highlighter: s.highlighter,
+      canvas_locked: s.canvas_locked,
     } as unknown,
     updated_at: s.updated_at,
   };
