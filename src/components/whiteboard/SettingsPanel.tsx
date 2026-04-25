@@ -522,6 +522,21 @@ export function SettingsPanel({ settings, update, livePose = "" }: { settings: A
               Pinch is normalized to your palm size, so it works at any camera distance.
               Increase if a 2-3 cm gap between thumb &amp; index isn’t recognized; decrease for fewer accidental pinches.
             </p>
+
+            <label className="text-xs text-muted-foreground mt-3 block">
+              Cursor sensitivity: {settings.cursor_gain.toFixed(2)}×
+              <span className="ml-1 text-[10px]">
+                ({settings.cursor_gain < 1.1 ? "1:1 (raw)" :
+                  settings.cursor_gain < 1.8 ? "amplified" :
+                  settings.cursor_gain < 2.5 ? "fast" : "very fast"})
+              </span>
+            </label>
+            <input type="range" min={0.5} max={3} step={0.05} value={settings.cursor_gain}
+              onChange={(e) => update({ cursor_gain: Number(e.target.value) })}
+              className="w-full accent-primary" />
+            <p className="text-[10px] text-muted-foreground">
+              Higher values = small hand movements cover more screen. Useful when sitting close to the camera.
+            </p>
           </section>
 
           {/* ACCESSIBILITY */}
