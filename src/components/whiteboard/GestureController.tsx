@@ -86,6 +86,7 @@ export function GestureController({
   useEffect(() => { filterRef.current.set(smoothing.minCutoff, smoothing.beta); }, [smoothing.minCutoff, smoothing.beta]);
   useEffect(() => { stabilizerRef.current.setThreshold(stabilityThreshold); }, [stabilityThreshold]);
   useEffect(() => { if (motion) motionRef.current.setConfig(motion); }, [motion]);
+  useEffect(() => { setPinchSensitivity(pinchSensitivity); }, [pinchSensitivity]);
 
   // Pre-flight passive checks (HTTPS + API support + permission state).
   useEffect(() => {
