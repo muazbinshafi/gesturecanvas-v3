@@ -39,8 +39,10 @@ export function classifyPose(lm: LM[]): Pose {
   // OK sign: thumb tip touches index tip, other three extended
   if (ratio < OK_RATIO_THRESHOLD && f.middle && f.ring && f.pinky && !f.index) return "OK";
 
-  // Pinch (thumb+index close, others curled)
-  if (ratio < PINCH_RATIO_THRESHOLD && !f.middle && !f.ring && !f.pinky) return "PINCH";
+  // Pinch (thumb+index close). We accept ANY state of the other three fingers
+  // because users naturally pinch with the rest of the hand relaxed/open —
+  // requiring all three curled made pinch nearly impossible to trigger.
+  if (ratio < PINCH_RATIO_THRESHOLD) return "PINCH";
 
   // FIVE_SPREAD vs ERASE — all fingers extended; spread normalized by palm size
   if (f.thumb && f.index && f.middle && f.ring && f.pinky) {
