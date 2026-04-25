@@ -169,6 +169,24 @@ export interface CustomGestureTemplate {
   createdAt: number;
 }
 
+/**
+ * User-authored mapping override: pose → action/tool. Custom mappings are
+ * checked BEFORE the base GestureMappings so they take precedence. They can
+ * be reordered (lower order index = higher precedence among customs).
+ */
+export interface CustomMapping {
+  id: string;
+  name: string;
+  /** Pose key — must be one of the keys in GestureMappings. */
+  pose: keyof GestureMappings;
+  /** Either a Tool name or a GestureAction name. */
+  action: Tool | GestureAction;
+  /** Lower number = higher precedence. */
+  order: number;
+  enabled: boolean;
+  createdAt: number;
+}
+
 export const DEFAULT_BRUSH: BrushSettings = { size: 4, color: "#a78bfa", smoothing: 0.5 };
 export const DEFAULT_SMOOTHING: SmoothingSettings = { minCutoff: 1.2, beta: 0.015, preset: "studio" };
 export const DEFAULT_CAMERA: CameraSettings = { enabled: false, resolution: "640x480", facingMode: "user", numHands: 2 };

@@ -9,12 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RoomsRouteImport } from './routes/rooms'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BTokenRouteImport } from './routes/b.$token'
 import { Route as ApiSmartInkRouteImport } from './routes/api.smart-ink'
 
+const RoomsRoute = RoomsRouteImport.update({
+  id: '/rooms',
+  path: '/rooms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -45,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/auth': typeof AuthRoute
+  '/rooms': typeof RoomsRoute
   '/api/smart-ink': typeof ApiSmartInkRoute
   '/b/$token': typeof BTokenRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/auth': typeof AuthRoute
+  '/rooms': typeof RoomsRoute
   '/api/smart-ink': typeof ApiSmartInkRoute
   '/b/$token': typeof BTokenRoute
 }
@@ -60,27 +68,43 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/auth': typeof AuthRoute
+  '/rooms': typeof RoomsRoute
   '/api/smart-ink': typeof ApiSmartInkRoute
   '/b/$token': typeof BTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/auth' | '/api/smart-ink' | '/b/$token'
+  fullPaths: '/' | '/app' | '/auth' | '/rooms' | '/api/smart-ink' | '/b/$token'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app' | '/auth' | '/api/smart-ink' | '/b/$token'
-  id: '__root__' | '/' | '/app' | '/auth' | '/api/smart-ink' | '/b/$token'
+  to: '/' | '/app' | '/auth' | '/rooms' | '/api/smart-ink' | '/b/$token'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/auth'
+    | '/rooms'
+    | '/api/smart-ink'
+    | '/b/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRoute
   AuthRoute: typeof AuthRoute
+  RoomsRoute: typeof RoomsRoute
   ApiSmartInkRoute: typeof ApiSmartInkRoute
   BTokenRoute: typeof BTokenRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/rooms': {
+      id: '/rooms'
+      path: '/rooms'
+      fullPath: '/rooms'
+      preLoaderRoute: typeof RoomsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -123,6 +147,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRoute,
   AuthRoute: AuthRoute,
+  RoomsRoute: RoomsRoute,
   ApiSmartInkRoute: ApiSmartInkRoute,
   BTokenRoute: BTokenRoute,
 }
