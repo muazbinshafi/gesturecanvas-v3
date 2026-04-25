@@ -35,11 +35,13 @@ export const Route = createRootRoute({
       { name: "author", content: "Gesture Whiteboard" },
       { name: "theme-color", content: "#1a1530" },
       { property: "og:title", content: "Gesture Whiteboard — Draw with your hands" },
-      { property: "og:description", content: "AI-powered gesture-controlled whiteboard. Draw with your hand or mouse." },
+      { property: "og:description", content: "AI-powered gesture-controlled whiteboard. Draw, sketch shapes, and recognise handwriting using your webcam — works offline." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Gesture Whiteboard — Draw with your hands" },
-      { name: "twitter:description", content: "AI-powered gesture-controlled whiteboard." },
+      { name: "twitter:description", content: "AI-powered gesture-controlled whiteboard. Draw, sketch shapes, and recognise handwriting using your webcam — works offline." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/29edc6d4-4054-4c17-b193-f9fab932078e/id-preview-06897045--9f910314-e5f5-47f3-a37c-7d88b87899a3.lovable.app-1777116900723.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/29edc6d4-4054-4c17-b193-f9fab932078e/id-preview-06897045--9f910314-e5f5-47f3-a37c-7d88b87899a3.lovable.app-1777116900723.png" },
     ],
     links: [
       {
