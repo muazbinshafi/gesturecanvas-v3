@@ -11,9 +11,16 @@ export const ACTION_NAMES: GestureAction[] = [
   "none",
   "undo", "redo", "clear", "save", "screenshot",
   "color_next", "color_prev",
-  "size_up", "size_down",
-  "layer_next", "toggle_camera", "toggle_grid",
+  "size_up", "size_down", "size_min", "size_max",
+  "layer_next", "layer_prev",
+  "toggle_camera", "toggle_grid", "toggle_snap", "toggle_mirror", "toggle_palm",
   "toggle_fullscreen", "duplicate", "delete_selected",
+  "zoom_in", "zoom_out", "zoom_reset", "fit_to_screen",
+  "theme_next", "lock_canvas",
+  "add_sticky", "add_text",
+  "copy", "paste", "select_all",
+  "voice_toggle", "smart_ink_cycle",
+  "pen", "eraser", "highlighter_toggle",
 ];
 
 export function isTool(value: string): value is Tool {
@@ -33,12 +40,30 @@ export interface ActionContext {
   screenshot: () => void;
   cycleColor: (dir: 1 | -1) => void;
   changeSize: (delta: number) => void;
-  cycleLayer: () => void;
+  setSize?: (n: number) => void;
+  cycleLayer: (dir?: 1 | -1) => void;
   toggleCamera: () => void;
   toggleGrid: () => void;
+  toggleSnap?: () => void;
+  toggleMirror?: () => void;
+  togglePalm?: () => void;
   toggleFullscreen: () => void;
   duplicate: () => void;
   deleteSelected: () => void;
+  zoomIn?: () => void;
+  zoomOut?: () => void;
+  zoomReset?: () => void;
+  fitToScreen?: () => void;
+  themeNext?: () => void;
+  lockCanvas?: () => void;
+  addSticky?: () => void;
+  addText?: () => void;
+  copy?: () => void;
+  paste?: () => void;
+  selectAll?: () => void;
+  voiceToggle?: () => void;
+  smartInkCycle?: () => void;
+  highlighterToggle?: () => void;
 }
 
 /** Run a mapped value (Tool or GestureAction) against the running app. */
@@ -58,11 +83,33 @@ export function runMapping(value: string | undefined, ctx: ActionContext) {
     case "color_prev": return ctx.cycleColor(-1);
     case "size_up": return ctx.changeSize(+1);
     case "size_down": return ctx.changeSize(-1);
-    case "layer_next": return ctx.cycleLayer();
+    case "size_min": return ctx.setSize?.(1);
+    case "size_max": return ctx.setSize?.(32);
+    case "layer_next": return ctx.cycleLayer(1);
+    case "layer_prev": return ctx.cycleLayer(-1);
     case "toggle_camera": return ctx.toggleCamera();
     case "toggle_grid": return ctx.toggleGrid();
+    case "toggle_snap": return ctx.toggleSnap?.();
+    case "toggle_mirror": return ctx.toggleMirror?.();
+    case "toggle_palm": return ctx.togglePalm?.();
     case "toggle_fullscreen": return ctx.toggleFullscreen();
     case "duplicate": return ctx.duplicate();
     case "delete_selected": return ctx.deleteSelected();
+    case "zoom_in": return ctx.zoomIn?.();
+    case "zoom_out": return ctx.zoomOut?.();
+    case "zoom_reset": return ctx.zoomReset?.();
+    case "fit_to_screen": return ctx.fitToScreen?.();
+    case "theme_next": return ctx.themeNext?.();
+    case "lock_canvas": return ctx.lockCanvas?.();
+    case "add_sticky": return ctx.addSticky?.();
+    case "add_text": return ctx.addText?.();
+    case "copy": return ctx.copy?.();
+    case "paste": return ctx.paste?.();
+    case "select_all": return ctx.selectAll?.();
+    case "voice_toggle": return ctx.voiceToggle?.();
+    case "smart_ink_cycle": return ctx.smartInkCycle?.();
+    case "pen": return ctx.setTool("pen");
+    case "eraser": return ctx.setTool("eraser");
+    case "highlighter_toggle": return ctx.highlighterToggle?.();
   }
 }
