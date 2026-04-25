@@ -314,6 +314,7 @@ function WhiteboardPage() {
           facingMode={settings.camera.facingMode}
           smoothing={settings.smoothing}
           stabilityThreshold={effectiveStability}
+          motion={settings.motion}
           onFrame={onFrame}
           onToggle={handleCameraToggle}
           fullscreen={fullscreen}
