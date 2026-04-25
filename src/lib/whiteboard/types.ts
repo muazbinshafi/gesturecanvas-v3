@@ -128,7 +128,7 @@ export interface GestureMappings {
   HOVER: Tool;
   PAN: Tool;
   ERASE: Tool;
-  PINCH: Tool;
+  PINCH: Tool | GestureAction;
   /** Optional extended pose → tool or action mapping. */
   PEACE?: Tool | GestureAction;
   THREE?: Tool | GestureAction;
