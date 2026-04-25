@@ -477,6 +477,16 @@ export function SettingsPanel({ settings, update, livePose = "" }: { settings: A
                 onChange={(e) => update({ sound_effects: e.target.checked })} />
               Subtle sound effects on actions
             </label>
+            <label className="flex items-center gap-2 text-sm mt-2">
+              <input type="checkbox" checked={settings.highlighter}
+                onChange={(e) => update({ highlighter: e.target.checked })} />
+              Highlighter mode (translucent strokes)
+            </label>
+            <label className="flex items-center gap-2 text-sm mt-2">
+              <input type="checkbox" checked={settings.canvas_locked}
+                onChange={(e) => update({ canvas_locked: e.target.checked })} />
+              Lock canvas (read-only)
+            </label>
             <label className="text-xs text-muted-foreground mt-2 block">Hand cursor color</label>
             <input type="color" value={settings.hand_cursor_color}
               onChange={(e) => update({ hand_cursor_color: e.target.value })}
