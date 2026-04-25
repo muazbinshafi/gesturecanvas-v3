@@ -15,20 +15,35 @@ export function classifyPose(lm: LM[]): Pose {
   const f = fingerStates(lm);
   const pinch = pinchDistance(lm);
 
+  // Heart shape — not detectable from one hand reliably; skipped.
+
   // OK sign: thumb tip touches index tip, other three extended
   if (pinch < 0.05 && f.middle && f.ring && f.pinky) return "OK";
 
   // Pinch (thumb+index close, others curled)
   if (pinch < PINCH_THRESHOLD && !f.middle && !f.ring && !f.pinky) return "PINCH";
 
-  // Open hand (all five extended)
-  if (f.thumb && f.index && f.middle && f.ring && f.pinky) return "ERASE";
+  // FIVE_SPREAD vs ERASE — all fingers extended; spread checks distance between adjacent tips
+  if (f.thumb && f.index && f.middle && f.ring && f.pinky) {
+    const spread = dist(lm[8], lm[12]) + dist(lm[12], lm[16]) + dist(lm[16], lm[20]);
+    if (spread > 0.3) return "FIVE_SPREAD";
+    return "ERASE";
+  }
+
+  // FOUR — index+middle+ring+pinky extended, thumb tucked
+  if (!f.thumb && f.index && f.middle && f.ring && f.pinky) return "FOUR";
 
   // Rock sign — index + pinky extended, middle/ring curled
   if (f.index && !f.middle && !f.ring && f.pinky) return "ROCK";
 
   // Call me — thumb + pinky extended, others curled
   if (f.thumb && !f.index && !f.middle && !f.ring && f.pinky) return "CALL";
+
+  // PINKY_UP — only pinky extended
+  if (!f.thumb && !f.index && !f.middle && !f.ring && f.pinky) return "PINKY_UP";
+
+  // MIDDLE_UP — only middle extended
+  if (!f.thumb && !f.index && f.middle && !f.ring && !f.pinky) return "MIDDLE_UP";
 
   // Gun — thumb + index extended, others curled (and not pinching)
   if (f.thumb && f.index && !f.middle && !f.ring && !f.pinky && pinch > PINCH_THRESHOLD) {
@@ -56,11 +71,21 @@ export function classifyPose(lm: LM[]): Pose {
   // Three fingers (index+middle+ring) — used for shape mode
   if (f.index && f.middle && f.ring && !f.pinky) return "THREE";
 
-  // Single index finger — draw
-  if (f.index && !f.middle && !f.ring && !f.pinky) return "DRAW";
+  // INDEX_DOWN — only index, but pointing downward (tip below MCP)
+  if (f.index && !f.middle && !f.ring && !f.pinky) {
+    if (lm[8].y > lm[5].y + 0.06) return "INDEX_DOWN";
+    return "DRAW";
+  }
 
-  // Closed fist (all four fingers down)
-  if (!f.index && !f.middle && !f.ring && !f.pinky) return "PAN";
+  // PALM_SIDE vs PAN — closed fist; check wrist orientation
+  if (!f.index && !f.middle && !f.ring && !f.pinky) {
+    // If palm is on its side (thumb extended sideways), report PALM_SIDE
+    const dxThumb = Math.abs(lm[4].x - lm[0].x);
+    const dyThumb = Math.abs(lm[4].y - lm[0].y);
+    if (f.thumb && dxThumb > dyThumb * 1.6) return "PALM_SIDE";
+    if (!f.thumb) return "FIST_THUMB"; // tightly closed fist (thumb tucked)
+    return "PAN";
+  }
 
   return "NONE";
 }

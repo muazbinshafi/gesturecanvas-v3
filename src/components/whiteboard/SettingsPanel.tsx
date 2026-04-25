@@ -42,13 +42,28 @@ const POSE_LABELS: { key: GesturePoseKey; label: string; hint: string; emoji: st
   { key: "PINCH",       label: "Pinch (thumb + index)", hint: "Select / move / zoom",   emoji: "🤏", kind: "tool" },
   { key: "PEACE",       label: "Peace / V (spread)",    hint: "Default: undo",          emoji: "✌️", kind: "any" },
   { key: "THREE",       label: "Three fingers up",      hint: "Default: rectangle",     emoji: "🤟", kind: "any" },
+  { key: "FOUR",        label: "Four fingers up",       hint: "Default: circle",        emoji: "✋", kind: "any" },
+  { key: "FIVE_SPREAD", label: "Five fingers spread",   hint: "Default: fit screen",    emoji: "🖐", kind: "any" },
   { key: "OK",          label: "OK sign",               hint: "Default: save",          emoji: "👌", kind: "any" },
-  { key: "ROCK",        label: "Rock sign 🤘",          hint: "Default: next color",    emoji: "🤘", kind: "any" },
-  { key: "CALL",        label: "Call me 🤙",            hint: "Default: screenshot",    emoji: "🤙", kind: "any" },
+  { key: "ROCK",        label: "Rock sign",             hint: "Default: next color",    emoji: "🤘", kind: "any" },
+  { key: "CALL",        label: "Call me",               hint: "Default: screenshot",    emoji: "🤙", kind: "any" },
   { key: "GUN",         label: "Gun (thumb + index)",   hint: "Default: delete",        emoji: "🔫", kind: "any" },
   { key: "L_SHAPE",     label: "L shape",               hint: "Default: next layer",    emoji: "🔠", kind: "any" },
-  { key: "THUMBS_UP",   label: "Thumbs up 👍",          hint: "Default: redo",          emoji: "👍", kind: "any" },
-  { key: "THUMBS_DOWN", label: "Thumbs down 👎",        hint: "Default: clear board",   emoji: "👎", kind: "any" },
+  { key: "THUMBS_UP",   label: "Thumbs up",             hint: "Default: redo",          emoji: "👍", kind: "any" },
+  { key: "THUMBS_DOWN", label: "Thumbs down",           hint: "Default: clear board",   emoji: "👎", kind: "any" },
+  { key: "PINKY_UP",    label: "Pinky finger up",       hint: "Default: brush smaller", emoji: "🤙", kind: "any" },
+  { key: "MIDDLE_UP",   label: "Middle finger up",      hint: "Default: prev color",    emoji: "🖕", kind: "any" },
+  { key: "INDEX_DOWN",  label: "Index pointing down",   hint: "Default: add sticky",    emoji: "👇", kind: "any" },
+  { key: "FIST_THUMB",  label: "Fist (thumb tucked)",   hint: "Default: lock canvas",   emoji: "👊", kind: "any" },
+  { key: "PALM_SIDE",   label: "Palm sideways",         hint: "Default: toggle grid",   emoji: "✋", kind: "any" },
+  { key: "HEART",       label: "Heart shape",           hint: "Default: cycle theme",   emoji: "🫶", kind: "any" },
+  { key: "SWIPE_LEFT",  label: "Swipe left ←",          hint: "Default: undo",          emoji: "⬅️", kind: "any" },
+  { key: "SWIPE_RIGHT", label: "Swipe right →",         hint: "Default: redo",          emoji: "➡️", kind: "any" },
+  { key: "SWIPE_UP",    label: "Swipe up ↑",            hint: "Default: brush larger",  emoji: "⬆️", kind: "any" },
+  { key: "SWIPE_DOWN",  label: "Swipe down ↓",          hint: "Default: brush smaller", emoji: "⬇️", kind: "any" },
+  { key: "CIRCLE_CW",   label: "Circle clockwise",      hint: "Default: zoom in",       emoji: "🔃", kind: "any" },
+  { key: "CIRCLE_CCW",  label: "Circle counter-CW",     hint: "Default: zoom out",      emoji: "🔄", kind: "any" },
+  { key: "DWELL",       label: "Hold cursor still",     hint: "Default: add text",      emoji: "⏳", kind: "any" },
 ];
 
 export function SettingsPanel({ settings, update, livePose = "" }: { settings: AppSettings; update: (p: Partial<AppSettings>) => void; livePose?: string }) {
@@ -225,6 +240,44 @@ export function SettingsPanel({ settings, update, livePose = "" }: { settings: A
                 );
               })}
             </div>
+          </section>
+
+          {/* MOTION GESTURES */}
+          <section>
+            <h3 className="text-sm font-semibold mb-2">Motion gestures</h3>
+            <p className="text-xs text-muted-foreground mb-2">
+              Detect swipes, circles, and dwell using cursor motion (only while index/peace/pinch is held). Disable to silence those poses.
+            </p>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={settings.motion.enabled}
+                onChange={(e) => update({ motion: { ...settings.motion, enabled: e.target.checked } })} />
+              Enable motion detection
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={settings.motion.circleEnabled}
+                onChange={(e) => update({ motion: { ...settings.motion, circleEnabled: e.target.checked } })} />
+              Detect circles (CW / CCW)
+            </label>
+            <label className="text-xs text-muted-foreground mt-2 block">Swipe min distance: {settings.motion.swipeMinDistance}px</label>
+            <input type="range" min={60} max={400} step={10} value={settings.motion.swipeMinDistance}
+              onChange={(e) => update({ motion: { ...settings.motion, swipeMinDistance: Number(e.target.value) } })}
+              className="w-full accent-primary" />
+            <label className="text-xs text-muted-foreground mt-2 block">Swipe max duration: {settings.motion.swipeMaxDuration}ms</label>
+            <input type="range" min={200} max={1500} step={50} value={settings.motion.swipeMaxDuration}
+              onChange={(e) => update({ motion: { ...settings.motion, swipeMaxDuration: Number(e.target.value) } })}
+              className="w-full accent-primary" />
+            <label className="text-xs text-muted-foreground mt-2 block">Dwell hold time: {settings.motion.dwellMs}ms</label>
+            <input type="range" min={300} max={2000} step={50} value={settings.motion.dwellMs}
+              onChange={(e) => update({ motion: { ...settings.motion, dwellMs: Number(e.target.value) } })}
+              className="w-full accent-primary" />
+            <label className="text-xs text-muted-foreground mt-2 block">Dwell radius: {settings.motion.dwellRadius}px</label>
+            <input type="range" min={6} max={60} step={2} value={settings.motion.dwellRadius}
+              onChange={(e) => update({ motion: { ...settings.motion, dwellRadius: Number(e.target.value) } })}
+              className="w-full accent-primary" />
+            <label className="text-xs text-muted-foreground mt-2 block">Circle min angle: {(settings.motion.circleMinAngle / Math.PI).toFixed(2)}π rad</label>
+            <input type="range" min={Math.PI} max={Math.PI * 3} step={0.1} value={settings.motion.circleMinAngle}
+              onChange={(e) => update({ motion: { ...settings.motion, circleMinAngle: Number(e.target.value) } })}
+              className="w-full accent-primary" />
           </section>
 
           {/* CUSTOM MAPPINGS — gesture-to-action editor with reorder + live preview */}
@@ -423,6 +476,16 @@ export function SettingsPanel({ settings, update, livePose = "" }: { settings: A
               <input type="checkbox" checked={settings.sound_effects}
                 onChange={(e) => update({ sound_effects: e.target.checked })} />
               Subtle sound effects on actions
+            </label>
+            <label className="flex items-center gap-2 text-sm mt-2">
+              <input type="checkbox" checked={settings.highlighter}
+                onChange={(e) => update({ highlighter: e.target.checked })} />
+              Highlighter mode (translucent strokes)
+            </label>
+            <label className="flex items-center gap-2 text-sm mt-2">
+              <input type="checkbox" checked={settings.canvas_locked}
+                onChange={(e) => update({ canvas_locked: e.target.checked })} />
+              Lock canvas (read-only)
             </label>
             <label className="text-xs text-muted-foreground mt-2 block">Hand cursor color</label>
             <input type="color" value={settings.hand_cursor_color}
