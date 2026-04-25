@@ -108,21 +108,35 @@ export function classifyPose(lm: LM[]): Pose {
   return "NONE";
 }
 
+/**
+ * PoseStabilizer with hysteresis.
+ *
+ * - To COMMIT a new pose: candidate must persist `threshold` consecutive frames.
+ * - To LEAVE the committed pose for "NONE": requires `threshold * 2` frames
+ *   (prevents flicker when hand briefly leaves a stable shape mid-motion).
+ * - Switching directly between two real poses still uses `threshold` frames.
+ */
 export class PoseStabilizer {
   private current: Pose = "NONE";
   private candidate: Pose = "NONE";
   private count = 0;
-  constructor(private threshold = 3) {}
+  constructor(private threshold = 6) {}
   setThreshold(t: number) { this.threshold = Math.max(1, Math.min(20, Math.round(t))); }
   confidence(): number {
-    return Math.max(0, Math.min(1, this.count / this.threshold));
+    const need = this.requiredFor(this.candidate);
+    return Math.max(0, Math.min(1, this.count / need));
   }
   candidatePose(): Pose { return this.candidate; }
+  private requiredFor(next: Pose): number {
+    // Releasing a stable pose to NONE is harder — ride out brief tracking gaps.
+    if (this.current !== "NONE" && next === "NONE") return this.threshold * 2;
+    return this.threshold;
+  }
   push(next: Pose): Pose {
     if (next === this.current) { this.candidate = next; this.count = 0; return this.current; }
     if (next === this.candidate) { this.count++; }
     else { this.candidate = next; this.count = 1; }
-    if (this.count >= this.threshold) { this.current = next; this.count = 0; }
+    if (this.count >= this.requiredFor(next)) { this.current = next; this.count = 0; }
     return this.current;
   }
 }

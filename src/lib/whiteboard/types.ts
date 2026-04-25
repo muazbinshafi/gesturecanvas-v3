@@ -214,7 +214,7 @@ export interface CustomMapping {
 }
 
 export const DEFAULT_BRUSH: BrushSettings = { size: 4, color: "#a78bfa", smoothing: 0.5 };
-export const DEFAULT_SMOOTHING: SmoothingSettings = { minCutoff: 1.2, beta: 0.015, preset: "studio" };
+export const DEFAULT_SMOOTHING: SmoothingSettings = { minCutoff: 0.6, beta: 0.005, preset: "studio" };
 export const DEFAULT_CAMERA: CameraSettings = { enabled: false, resolution: "640x480", facingMode: "user", numHands: 2 };
 export const DEFAULT_MAPPINGS: GestureMappings = {
   // ── Continuous tools (held while pose is active) ─────────────────────
