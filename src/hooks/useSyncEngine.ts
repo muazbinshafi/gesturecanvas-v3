@@ -72,7 +72,7 @@ export interface AppSettings {
   updated_at: string;
 }
 
-const CURRENT_GESTURE_CONFIG_VERSION = 2;
+const CURRENT_GESTURE_CONFIG_VERSION = 3;
 
 export const STRICT_MOTION_DEFAULTS: MotionConfig = {
   ...DEFAULT_MOTION,
