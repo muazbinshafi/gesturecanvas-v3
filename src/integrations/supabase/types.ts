@@ -14,16 +14,179 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      room_members: {
+        Row: {
+          id: string
+          joined_at: string
+          role: Database["public"]["Enums"]["room_role"]
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          role?: Database["public"]["Enums"]["room_role"]
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          role?: Database["public"]["Enums"]["room_role"]
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_members_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rooms: {
+        Row: {
+          allow_link_join: boolean
+          board_id: string | null
+          created_at: string
+          default_role: Database["public"]["Enums"]["room_role"]
+          id: string
+          join_code: string
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          allow_link_join?: boolean
+          board_id?: string | null
+          created_at?: string
+          default_role?: Database["public"]["Enums"]["room_role"]
+          id?: string
+          join_code?: string
+          name?: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          allow_link_join?: boolean
+          board_id?: string | null
+          created_at?: string
+          default_role?: Database["public"]["Enums"]["room_role"]
+          id?: string
+          join_code?: string
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          brush_settings: Json
+          gesture_mappings: Json
+          smart_ink_mode: string
+          smoothing: Json
+          theme: string
+          ui_layout: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brush_settings?: Json
+          gesture_mappings?: Json
+          smart_ink_mode?: string
+          smoothing?: Json
+          theme?: string
+          ui_layout?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brush_settings?: Json
+          gesture_mappings?: Json
+          smart_ink_mode?: string
+          smoothing?: Json
+          theme?: string
+          ui_layout?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      whiteboards: {
+        Row: {
+          created_at: string
+          data: Json
+          id: string
+          is_public: boolean
+          share_token: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          id?: string
+          is_public?: boolean
+          share_token?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: string
+          is_public?: boolean
+          share_token?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      user_room_role: {
+        Args: { _room_id: string; _user_id: string }
+        Returns: Database["public"]["Enums"]["room_role"]
+      }
     }
     Enums: {
-      [_ in never]: never
+      room_role: "viewer" | "editor" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +313,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      room_role: ["viewer", "editor", "admin"],
+    },
   },
 } as const
