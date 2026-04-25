@@ -72,7 +72,7 @@ export interface AppSettings {
   updated_at: string;
 }
 
-const CURRENT_GESTURE_CONFIG_VERSION = 3;
+const CURRENT_GESTURE_CONFIG_VERSION = 4;
 
 export const STRICT_MOTION_DEFAULTS: MotionConfig = {
   ...DEFAULT_MOTION,
@@ -100,10 +100,10 @@ export function applyStrictGestureReset(settings: AppSettings): AppSettings {
     gesture_mappings: { ...DEFAULT_MAPPINGS },
     custom_gestures: [],
     disabled_poses: [],
-    pose_stability: 7,
+    pose_stability: 4,
     adaptive_stability: false,
-    pinch_sensitivity: 0.65,
-    cursor_gain: 1.75,
+    pinch_sensitivity: 0.55,
+    cursor_gain: 1.6,
     smoothing: { ...DEFAULT_SMOOTHING },
     gesture_profiles: cloneProfiles(BUILTIN_PROFILES),
     active_profile_id: "",
@@ -141,10 +141,10 @@ const DEFAULTS: AppSettings = {
   sound_effects: false,
   hand_cursor_color: "#a78bfa",
   autosave_interval: 30,
-  pose_stability: 7,
+  pose_stability: 4,
   adaptive_stability: false,
-  pinch_sensitivity: 0.65,
-  cursor_gain: 1.75,
+  pinch_sensitivity: 0.55,
+  cursor_gain: 1.6,
   gesture_profiles: cloneProfiles(BUILTIN_PROFILES),
   active_profile_id: "",
   custom_mappings: [],

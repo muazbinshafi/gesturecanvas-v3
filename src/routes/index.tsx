@@ -243,7 +243,7 @@ function HomePage() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { k: "Latency", v: "≈ 30–60 fps GPU tracking" },
-            { k: "Model", v: "MediaPipe HandLandmarker (float16)" },
+            { k: "Model", v: "MediaPipe GestureRecognizer v2 (hybrid ML + geometry)" },
             { k: "Storage", v: "IndexedDB + cloud sync" },
             { k: "Auth", v: "Email + Google OAuth" },
             { k: "Export", v: "PNG · JSON" },
