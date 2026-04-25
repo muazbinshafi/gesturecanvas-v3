@@ -113,6 +113,27 @@ function WhiteboardPage() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
   const doToggleGrid = () => update({ show_grid: !settings.show_grid });
+  const doToggleSnap = () => update({ snap_to_grid: !settings.snap_to_grid });
+  const doToggleMirror = () => update({ mirror_camera: !settings.mirror_camera });
+  const doTogglePalm = () => update({ palm: { ...settings.palm, enabled: !settings.palm.enabled } });
+  const doZoomIn = () => canvasRef.current?.zoomBy(1.2);
+  const doZoomOut = () => canvasRef.current?.zoomBy(1 / 1.2);
+  const doZoomReset = () => canvasRef.current?.resetViewport();
+  const doFitScreen = () => canvasRef.current?.resetViewport();
+  const doThemeNext = () => {
+    const order: AppSettings["theme"][] = ["dark", "light", "sepia", "chalkboard", "blueprint"];
+    const i = order.indexOf(settings.theme);
+    update({ theme: order[(i + 1) % order.length] });
+  };
+  const doLockCanvas = () => update({ canvas_locked: !settings.canvas_locked });
+  const doAddSticky = () => canvasRef.current?.addSticky();
+  const doVoiceToggle = () => update({ voice: { ...settings.voice, enabled: !settings.voice.enabled } });
+  const doSmartInkCycle = () => {
+    const order: AppSettings["smart_ink_mode"][] = ["off", "heuristics", "auto", "latex"];
+    const i = order.indexOf(settings.smart_ink_mode);
+    update({ smart_ink_mode: order[(i + 1) % order.length] });
+  };
+  const doHighlighterToggle = () => update({ highlighter: !settings.highlighter });
 
   function onFrame(f: GestureFrame) {
     setPose(f.pose);
@@ -144,16 +165,34 @@ function WhiteboardPage() {
           setColor(n);
         },
         changeSize: (delta) => setSize((s) => Math.min(32, Math.max(1, s + delta))),
-        cycleLayer: () => {
+        setSize: (n) => setSize(Math.min(32, Math.max(1, n))),
+        cycleLayer: (dir = 1) => {
           const order: Array<"ink" | "shapes" | "text" | "objects"> = ["ink", "shapes", "text", "objects"];
           const i = order.indexOf(settings.active_layer);
-          update({ active_layer: order[(i + 1) % order.length] });
+          update({ active_layer: order[(i + dir + order.length) % order.length] });
         },
         toggleCamera: () => handleCameraToggle(!cameraOn),
         toggleGrid: doToggleGrid,
+        toggleSnap: doToggleSnap,
+        toggleMirror: doToggleMirror,
+        togglePalm: doTogglePalm,
         toggleFullscreen: () => setFullscreen((f) => !f),
         duplicate: () => { /* requires selection support */ },
         deleteSelected: () => { /* requires selection support */ },
+        zoomIn: doZoomIn,
+        zoomOut: doZoomOut,
+        zoomReset: doZoomReset,
+        fitToScreen: doFitScreen,
+        themeNext: doThemeNext,
+        lockCanvas: doLockCanvas,
+        addSticky: doAddSticky,
+        addText: () => setTool("text"),
+        copy: () => { /* selection-dependent */ },
+        paste: () => { /* selection-dependent */ },
+        selectAll: () => { /* selection-dependent */ },
+        voiceToggle: doVoiceToggle,
+        smartInkCycle: doSmartInkCycle,
+        highlighterToggle: doHighlighterToggle,
       });
     }
     canvasRef.current?.applyGestureCursor(f.pose, f.cursor);
