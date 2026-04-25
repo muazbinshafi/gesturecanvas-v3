@@ -49,6 +49,8 @@ function WhiteboardPage() {
   const cameraInitRef = useRef(false);
   const [pose, setPose] = useState<string>("NONE");
   const [boardSize, setBoardSize] = useState({ w: 800, h: 600 });
+  const lastCursorRef = useRef<{ x: number; y: number } | null>(null);
+  const lastClickRef = useRef(0);
 
   useEffect(() => {
     const el = document.getElementById("canvas-wrap");
@@ -116,10 +118,23 @@ function WhiteboardPage() {
   const doToggleSnap = () => update({ snap_to_grid: !settings.snap_to_grid });
   const doToggleMirror = () => update({ mirror_camera: !settings.mirror_camera });
   const doTogglePalm = () => update({ palm: { ...settings.palm, enabled: !settings.palm.enabled } });
-  const doZoomIn = () => canvasRef.current?.zoomBy(1.2);
-  const doZoomOut = () => canvasRef.current?.zoomBy(1 / 1.2);
-  const doZoomReset = () => canvasRef.current?.resetViewport();
-  const doFitScreen = () => canvasRef.current?.resetViewport();
+  // Zoom actions removed — they caused runaway redraws and froze low-end laptops.
+  // Trackpad ctrl-scroll zoom on the canvas itself still works.
+  const doClick = () => {
+    const now = performance.now();
+    if (now - lastClickRef.current < 350) return; // debounce rapid pinches
+    lastClickRef.current = now;
+    const c = lastCursorRef.current;
+    const el = canvasRef.current?.getCanvasEl();
+    if (!c || !el) return;
+    const r = el.getBoundingClientRect();
+    const clientX = r.left + c.x;
+    const clientY = r.top + c.y;
+    const opts: PointerEventInit = { bubbles: true, cancelable: true, clientX, clientY, pointerType: "mouse", pointerId: 99, button: 0 };
+    el.dispatchEvent(new PointerEvent("pointerdown", opts));
+    el.dispatchEvent(new PointerEvent("pointerup", opts));
+    el.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, clientX, clientY }));
+  };
   const doThemeNext = () => {
     const order: AppSettings["theme"][] = ["dark", "light", "sepia", "chalkboard", "blueprint"];
     const i = order.indexOf(settings.theme);
@@ -135,8 +150,20 @@ function WhiteboardPage() {
   };
   const doHighlighterToggle = () => update({ highlighter: !settings.highlighter });
 
+  // Per-action throttle. Continuous *tools* (pen/eraser/select/pan/...) are
+  // held while the pose is active and must NOT be throttled. One-shot
+  // *actions* (undo/save/screenshot/...) are throttled to 600ms each so a
+  // single sustained pose can't fire dozens of state mutations per second —
+  // a known cause of preview freezes on weaker devices.
+  const lastFireRef = useRef<Map<string, number>>(new Map());
+  const isContinuousTool = (m: string) =>
+    m === "pen" || m === "eraser" || m === "select" || m === "pan" ||
+    m === "rect" || m === "circle" || m === "arrow" || m === "text" ||
+    m === "sticky" || m === "image";
+
   function onFrame(f: GestureFrame) {
     setPose(f.pose);
+    if (f.cursor) lastCursorRef.current = f.cursor;
     if (settings.disabled_poses.includes(f.pose)) {
       canvasRef.current?.applyGestureCursor(f.pose, f.cursor);
       return;
@@ -146,10 +173,20 @@ function WhiteboardPage() {
     const mapped = customWinner
       ? customWinner.action
       : settings.gesture_mappings[f.pose as keyof typeof settings.gesture_mappings];
-    if (mapped && f.pose !== "NONE") {
+    if (mapped && f.pose !== "NONE" && mapped !== "none") {
+      // Throttle non-tool actions to prevent runaway repeats / freezes.
+      const now = performance.now();
+      if (!isContinuousTool(mapped)) {
+        const last = lastFireRef.current.get(mapped) ?? 0;
+        if (now - last < 600) {
+          canvasRef.current?.applyGestureCursor(f.pose, f.cursor);
+          return;
+        }
+        lastFireRef.current.set(mapped, now);
+      }
       // Record this as an "action" candidate for adaptive tuning. If the user
       // undoes within 2.5s we'll count it as a false trigger.
-      if (mapped !== "none" && mapped !== "undo") adaptRef.current.noteAction();
+      if (mapped !== "undo") adaptRef.current.noteAction();
 
       runMapping(mapped, {
         setTool: (t) => { if (t !== tool) setTool(t); },
@@ -179,10 +216,7 @@ function WhiteboardPage() {
         toggleFullscreen: () => setFullscreen((f) => !f),
         duplicate: () => { /* requires selection support */ },
         deleteSelected: () => { /* requires selection support */ },
-        zoomIn: doZoomIn,
-        zoomOut: doZoomOut,
-        zoomReset: doZoomReset,
-        fitToScreen: doFitScreen,
+        click: doClick,
         themeNext: doThemeNext,
         lockCanvas: doLockCanvas,
         addSticky: doAddSticky,

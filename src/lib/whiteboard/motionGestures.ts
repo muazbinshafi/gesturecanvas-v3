@@ -27,12 +27,15 @@ export interface MotionConfig {
 }
 
 export const DEFAULT_MOTION: MotionConfig = {
-  swipeMinDistance: 180,
-  swipeMaxDuration: 600,
+  swipeMinDistance: 220,
+  swipeMaxDuration: 500,
   dwellRadius: 18,
-  dwellMs: 700,
-  circleEnabled: true,
-  circleMinAngle: Math.PI * 1.6,
+  dwellMs: 800,
+  // Circle detection is OFF by default — it triggered false positives on
+  // ordinary hand movement and (when mapped to zoom) caused runaway redraws
+  // that froze low-end devices.
+  circleEnabled: false,
+  circleMinAngle: Math.PI * 1.8,
   enabled: true,
 };
 
